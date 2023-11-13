@@ -28,25 +28,14 @@ LFE08=$fe08
 
                 .if version==300
 
-                ; Bodge area
-L9FFD_300=$9ffd
-LDAC7_300=$dac7
-LDC23_300=LDC36
-LE3C1_300=$e3c1
-LE2CC_300=$e2cc
-LED16_300:=$ed16
-;LED5A_300:=$ed5a
-;LE756_300=$e756
-;LE759_300=$e759
-;LE75C_300=$e75c
-;LE75F_300=$e75f
-;LE762_300=$e762
-;LE765_300=$e765
-;LE768_300=$e768
-;LF0B5_300=$f0b5
-;LFBF7_300=$fbf7
+                ; Slogger Electron Expansion ROM hook. See, e.g.,
+                ; https://github.com/tom-seddon/SloggerElectronExpansion/blob/7da7052f2ba50529519309890a54b1d007b23791/originals/Electron-Expansion-v2.02.lst#L5679
+sloggerROM12Hook=$9ffd
 
+                ; Slogger MRB I/O port. Some notes here:
+                ; https://stardot.org.uk/forums/viewtopic.php?p=155634#p155634
 LFC7F=$fc7f
+                
                 .endif
                 
 vduRoutinesPage=$c3
@@ -2426,14 +2415,14 @@ LCB21:
                 stx $0366                    ; CB2D= 8E 66 03    .f.
 LCB30:
                 .if version==300
-                jsr LDAC7_300
+                jsr LDADA
                 php
                 sei
                 sta $0355
                 lda $0282
                 and #$C7
                 ora $0355
-                jsr LE3C1_300
+                jsr LE495
                 stx $0355
                 .else
                 jsr LDADA                    ; CB30= 20 DA DA     ZZ
@@ -4724,7 +4713,7 @@ LD965:
                 jsr LDADA                    ; Convert mode number into ULA mode setting
                 ora #$84                     ; D96B= 09 84       ..
                 .if version==300
-                jsr LE3C1_300
+                jsr LE495
                 .else
                 sta $0282                    ; D96D= 8D 82 02    ...
                 sta LFE07                    ; D970= 8D 07 FE    ..~
@@ -4868,7 +4857,7 @@ LDA16:
                 ldy #<messageTURBO-1
 LDA2A_300:
                 lda #>message64K
-                jsr LDC23_300
+                jsr LDC36
                 beq LDA4D
 LDA31_300:
                 .endif
@@ -7132,7 +7121,7 @@ LE7E5:
                 sta LFE07                    ; E7ED= 8D 07 FE    ..~
                 and #$7F                     ; E7F0= 29 7F       ).
                 .if version==300
-                jsr LE3C1_300
+                jsr LE495
                 .else
                 sta $0282                    ; E7F2= 8D 82 02    ...
                 sta LFE07                    ; E7F5= 8D 07 FE    ..~
@@ -7337,7 +7326,7 @@ LE92D:
                 cmp $0282                    ; E93E= CD 82 02    M..
                 beq LE949                    ; E941= F0 06       p.
                 .if version==300
-                jsr LE3C1_300
+                jsr LE495
                 .else
                 sta $0282                    ; E943= 8D 82 02    ...
                 sta LFE07                    ; E946= 8D 07 FE    ..~
@@ -7612,7 +7601,7 @@ LEAD1:
                 cmp $0282                    ; EAD2= CD 82 02    M..
                 beq LEADD                    ; EAD5= F0 06       p.
                 .if version==300
-                jsr LE3C1_300
+                jsr LE495
                 .else
                 sta $0282                    ; EAD7= 8D 82 02    ...
                 sta LFE07                    ; EADA= 8D 07 FE    ..~
@@ -7846,19 +7835,19 @@ LEC1E:
                 and #$3f
                 pha
                 lda #$c
-                jsr LE2CC_300
-                lda L9FFD_300
+                jsr LE3A0
+                lda sloggerROM12Hook
                 eor #$4C
                 bne LEC42_300
-                jsr L9FFD_300
+                jsr sloggerROM12Hook
                 bmi LEC57_300
 LEC42_300:
                 pla
                 pha
-                jsr LED16_300
+                jsr LECF8
                 sta $fc
                 lda #8
-                jsr LE2CC_300
+                jsr LE3A0
                 php
                 jsr LED5A_300
                 plp
@@ -7872,7 +7861,7 @@ LEC59_300:
                 ora $fc
                 tax
                 pla
-                jsr LE2CC_300
+                jsr LE3A0
                 pla
                 ldy $fc
 LEC66_300:
@@ -10153,7 +10142,7 @@ LF8C9:
                 and #$F9                     ; F8CE= 29 F9       )y
                 ora #$04                     ; F8D0= 09 04       ..
                 .if version==300
-                jsr LE3C1_300
+                jsr LE495
                 .else
                 sta $0282                    ; F8D2= 8D 82 02    ...
                 sta LFE07                    ; F8D5= 8D 07 FE    ..~
@@ -10477,7 +10466,7 @@ LFA8C:
                 lda $0282                    ; FA9C= AD 82 02    -..
                 and #$F9                     ; FA9F= 29 F9       )y
                 .if version==300
-                jsr LE3C1_300
+                jsr LE495
                 .else
                 sta $0282                    ; FAA1= 8D 82 02    ...
                 sta LFE07                    ; FAA4= 8D 07 FE    ..~
