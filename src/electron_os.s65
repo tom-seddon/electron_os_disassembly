@@ -1,9 +1,5 @@
 ; -*- comment-column:45; -*-
 
-                .weak
-version=100
-                .endweak
-
 LC380=$c380                        ; referred to by disassembled table
 LEA92=$ea92
 LD856=$d856                     ; reference to default page 2 contents
