@@ -1,0 +1,49 @@
+Electron internal key matrix, accessed via sideways ROM 8
+
+   +-------+-------+-----+-----+-------+-------+-----+-----+
+   |  x0   |  x1   | x2  | x3  |  x4   |  x5   | x6  | x7  |
+   |   x8  |   x9  |  xA |  xB |   xC  |   xD  |  xE |  xF |
+   +=======+=======+=====+=====+=======+=======+=====+=====+
+0x |       |       |     |     | |\ -> | []CPY |     | SPC |
+   | ^~ <- | _{ dn | RET | DEL |   -   | £} up |  :  |     |
+   +-------+-------+-----+-----+-------+-------+-----+-----+
+1x |  0 @  |   P   |  ;  |  ?  |   9   |   O   |  L  |  >  |
+   |   8   |   I   |  K  |  <  |   7   |   U   |  J  |  M  |
+   +-------+-------+-----+-----+-------+-------+-----+-----+
+2x |   6   |   Y   |  H  |  N  |   5   |   T   |  G  |  B  |
+   |   4   |   R   |  F  |  V  |   3   |   E   |  D  |  C  |
+   +-------+-------+-----+-----+-------+-------+-----+-----+
+3x |   2   |   W   |  S  |  X  |   1   |   Q   |  A  |  Z  |
+   |  ESC  |CAP/FUN| CTRL|SHIFT|       |       |     |     |
+   +-------+-------+-----+-----+-------+-------+-----+-----+
+
+54 individual keys plus BREAK
+
+&A000   1010 0000 all columns
+
+&9FFF   1001 1111
+&AFFF   1010 1111
+&B7FF   1011 0111
+&BBFF   1011 1011
+&BDFF   1011 1101
+&BEFF   1011 1110
+&BF00,x 1011 1111
+
+
+A0-A13 fed to keyboard
+D0-D3 read from keyboard
+
+Internal key number converted to keyboard column/row address with:
+(keynum DIV 4)=(column address line)+1
+(keynum MOD 4)=row bit position
+
+&04-&07: &BFFE %1011111111111110
+&08-&0B: &BFFD %1011111111111101
+
+table overrun results in:
+        &3C: &FE58,&01 -> &BF58,&01 %1011111101011000 
+-126 -> &3D: &FE58,&02 -> &BF58,&02 %1011111101011000 Y U I O P DWN UP  CPY
+-124 -> &3E: &FE58,&04 -> &BF58,&04 %1011111101011000 H J K L ;  :  RET
+        &3F: &FE58,&08 -> &BF58,&08 %1011111101011000 
+
+So, selects column 0,1,2,5,7
