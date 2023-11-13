@@ -25,7 +25,8 @@ LFE06=$fe06
 LFE07=$fe07
 LFE08=$fe08
 
-
+extendedVectorSpace=$d9f
+romInformationTable=$2a0
 beword: .macro value
                 .byte >\value
                 .byte <\value
@@ -3454,6 +3455,7 @@ LD250:
                 bcs LD25F                    ; D254= B0 09       0.
                 jmp ($0332)                  ; D256= 6C 32 03    l2.
 
+LD259:
                 dey                          ; D259= 88          .
                 bpl LD25F                    ; D25A= 10 03       ..
                 jsr LD2EA                    ; D25C= 20 EA D2     jR
@@ -3478,16 +3480,19 @@ LD27A:
                 ldy #$00                     ; D27C= A0 00        .
                 jmp ($035D)                  ; D27E= 6C 5D 03    l].
 
+LD281:
                 lsr $D1                      ; D281= 46 D1       FQ
                 bcc LD25F                    ; D283= 90 DA       .Z
                 jsr LD304                    ; D285= 20 04 D3     .S
                 jmp ($035D)                  ; D288= 6C 5D 03    l].
-
+                
+LD28B:
                 asl $D1                      ; D28B= 06 D1       .Q
                 bcc LD25F                    ; D28D= 90 D0       .P
                 jsr LD314                    ; D28F= 20 14 D3     .S
                 jmp ($035D)                  ; D292= 6C 5D 03    l].
 
+LD295:
                 dey                          ; D295= 88          .
                 bpl LD2A4                    ; D296= 10 0C       ..
                 jsr LD2EA                    ; D298= 20 EA D2     jR
@@ -4367,59 +4372,40 @@ LD837:
 ; Default page 2 contents - vectors and OSBYTE variables
 ; ======================================================
 LD845:
-                ror $33E0,x                  ; D845= 7E E0 33    ~`3
-                .byte $DB                    ; D848= DB          [
-                .byte $47                    ; D849= 47          G
-                .byte $DB                    ; D84A= DB          [
-                ;bit #$DB                     ; D84B= 89 DB       .[
-                .byte $89
-                .byte $DB
-                ;trb $DD                      ; D84D= 14 DD       .]
-                .byte $14
-                .byte $DD
-                .byte $44                    ; D84F= 44          D
-                sbc $BC                      ; D850= E5 BC       e<
-                sbc $2D                      ; D852= E5 2D       e-
-                dec LDC50,x                  ; D854= DE 50 DC    ^P\
-                dec $F1,x                    ; D857= D6 F1       Vq
-                cpy $20F0                    ; D859= CC F0 20    Lp
-                .byte $F4                    ; D85C= F4          t
-                ;bra LD853                    ; D85D= 80 F4       .t
-                .byte $80
-                .byte $F4
-
-                ;ldx #$FF                     ; D85F= A2 FF       ".
-                .byte $A2
-                .byte $FF
-                ;jsr LE8F3                    ; D861= 20 F3 E8     sh
-                .byte $20
-                .byte $F3
-                .byte $E8
-                ;beq LD808                    ; D864= F0 A2       p"
-                .byte $F0
-                .byte $A2
-                .byte $FF                    ; D866= FF          .
-                ldx #$FF                     ; D867= A2 FF       ".
-                ldx #$FF                     ; D869= A2 FF       ".
-                ldx #$FF                     ; D86B= A2 FF       ".
-                .byte $DF                    ; D86D= DF          _
-                nop                          ; D86E= EA          j
-                and ($E2,x)                  ; D86F= 21 E2       !b
-                ;cmp ($E1)                    ; D871= D2 E1       Ra
-                .byte $D2
-                .byte $E1
-                eor ($DF,x)                  ; D873= 41 DF       A_
-                ldx #$FF                     ; D875= A2 FF       ".
-                ldx #$FF                     ; D877= A2 FF       ".
-                ldx #$FF                     ; D879= A2 FF       ".
+                .word LE07E                  ; USERV=$200
+                .word LDB33                  ; BRKV=$202 
+                .word LDB47                  ; IRQ1V=$204
+                .word LDB89                  ; IRQ2V=$206
+                .word LDD14                  ; CLIV=$208 
+                .word LE544                  ; BYTEV=$20a
+                .word LE5BC                  ; WORDV=$20c
+                .word LDE2D                  ; WRCHV=$20e
+                .word LDC50                  ; RDCHV=$210
+                .word LF1D6                  ; FILEV=$212
+                .word LF0CC                  ; ARGSV=$214
+                .word LF420                  ; BGETV=$216
+                .word LF480                  ; BPUTV=$218
+                .word LFFA2                  ; GBPBV=$21a
+                .word LF320                  ; FINDV=$21c
+                .word LF0E8                  ; FSCV=$21e 
+                .word LFFA2                  ; EVENTV=$22
+                .word LFFA2                  ; UPTV=$222 
+                .word LFFA2                  ; NETV=$224 
+                .word LFFA2                  ; VDUV=$226 
+                .word LEADF                  ; KEYV=$228 
+                .word LE221                  ; INSV=$22a 
+                .word LE1D2                  ; REMV=$22c 
+                .word LDF41                  ; CNPV=$22e 
+                .word LFFA2                  ; IND1V=$230
+                .word LFFA2                  ; IND2V=$232
+                .word LFFA2                  ; IND3V=$234
 
 ; Default OSBYTE variables
-                bcc LD87E                    ; D87B= 90 01       ..
-                .byte $9F                    ; D87D= 9F          .
-LD87E:
-                ora $02A0                    ; D87E= 0D A0 02    . .
-                .byte $D3                    ; D881= D3          S
-                sbc $0300                    ; D882= ED 00 03    m..
+                .word $0190
+                .word extendedVectorSpace
+                .word romInformationTable
+                .word LEDD3
+                .word $0300
                 brk                          ; D885= 00          .
                 brk                          ; D886= 00          .
                 .byte $FF                    ; D887= FF          .
@@ -4918,6 +4904,7 @@ LDB82:
                 tax
                 pla                          ; Restore A and IRQ store
                 sta $FC
+LDB89:
                 lda $FC                      ; Restore A from IRQ store
                 rti                          ; Return from IRQ
 
@@ -5520,6 +5507,7 @@ LDF3B:
                 pla                          ; DF3F= 68          h
                 rts                          ; DF40= 60          `
 
+LDF41:
                 bvc LDF4A                    ; DF41= 50 07       P.
                 lda $02CC,x                  ; DF43= BD CC 02    =L.
                 sta $02D5,x                  ; DF46= 9D D5 02    .U.
@@ -5956,6 +5944,7 @@ LE1CE:
 LE1CF:
                 jmp ($022C)                  ; E1CF= 6C 2C 02    l,.
 
+LE1D2:
                 php                          ; E1D2= 08          .
                 sei                          ; E1D3= 78          x
                 lda $02CC,x                  ; E1D4= BD CC 02    =L.
@@ -6012,6 +6001,7 @@ LE21D:
 LE21E:
                 jmp ($022A)                  ; E21E= 6C 2A 02    l*.
 
+LE221:
                 php                          ; E221= 08          .
                 sei                          ; E222= 78          x
                 pha                          ; E223= 48          H
@@ -6565,6 +6555,7 @@ LE538:
 
 ; OSBYTE handler
 ; ==============
+LE544:
                 pha                          ; E544= 48          H
                 php                          ; E545= 08          .
                 sei                          ; E546= 78          x
@@ -6652,6 +6643,7 @@ LE5BB:
 
 ; OSWORD handler
 ; ==============
+LE5BC:
                 pha                          ; E5BC= 48          H
                 php                          ; E5BD= 08          .
                 sei                          ; E5BE= 78          x
@@ -8680,13 +8672,16 @@ LF06C:
                 .byte $9d
                 .byte $9e
                 .byte $9f
-                
-                ldy #$A1                     ; F07C= A0 A1        !
-                ldx #$A3                     ; F07E= A2 A3       "#
-                ldy $A5                      ; F080= A4 A5       $%
-                ldx $A7                      ; F082= A6 A7       &'
-                tay                          ; F084= A8          (
-                .byte $A9                    ; F085= A9          )
+                .byte $a0
+                .byte $a1
+                .byte $a2
+                .byte $a3
+                .byte $a4
+                .byte $a5
+                .byte $a6
+                .byte $a7
+                .byte $a8
+                .byte $a9
 
 ; Bitmask for 0-3
 ; ---------------
@@ -8759,22 +8754,13 @@ LF0D9:
 ; FSCV DISPATCH TABLE
 ; -------------------
 LF0DA:
-                .byte $A3                    ; F0DA= A3          #
-LF0DB:
-                .byte $F4                    ; F0DB= F4          t
-                .byte $77                    ; F0DC= 77          w
-                sbc $5A,x                    ; F0DD= F5 5A       uZ
-                ;sbc ($7D)                    ; F0DF= F2 7D       r}
-                .byte $F2
-                .byte $7D
-                cpx #$5A                     ; F0E1= E0 5A       `Z
-                ;sbc ($80)                    ; F0E3= F2 80       r.
-                .byte $F2
-                .byte $80
-                ;sbc ($E2)                    ; F0E5= F2 E2       rb
-                .byte $F2
-                .byte $E2
-                .byte $DF                    ; F0E7= DF          _
+                .word LF4A4-1
+                .word LF578-1
+                .word LF25B-1
+                .word LE07E-1
+                .word LF25B-1
+                .word LF281-1
+                .word LDFE3-1
 
 ; CFS/RFS FSC
 ; ===========
@@ -8784,7 +8770,7 @@ LF0E8:
                 stx $BC                      ; F0EC= 86 BC       .<
                 asl a                        ; F0EE= 0A          .
                 tax                          ; F0EF= AA          *
-                lda LF0DB,x                  ; F0F0= BD DB F0    =[p
+                lda LF0DA+1,x                  ; F0F0= BD DB F0    =[p
                 pha                          ; F0F3= 48          H
                 lda LF0DA,x                  ; F0F4= BD DA F0    =Zp
                 pha                          ; F0F7= 48          H
@@ -9126,6 +9112,7 @@ LF319:
 
 ; CFS/RFS OSFIND HANDLER
 ; ======================
+LF320:
                 sta $BC                      ; F320= 85 BC       .<
                 txa                          ; F322= 8A          .
                 pha                          ; F323= 48          H
@@ -9267,6 +9254,7 @@ LF3F4:
 LF41F:
                 rts                          ; F41F= 60          `
 
+LF420:
                 txa                          ; F420= 8A          .
                 pha                          ; F421= 48          H
                 tya                          ; F422= 98          .
@@ -9322,6 +9310,7 @@ LF47A:
                 .byte $DF                    ; F47B= DF          _
                 eor $4F                      ; F47C= 45 4F       EO
                 lsr $00                      ; F47E= 46 00       F.
+LF480:
                 sta $C4                      ; F480= 85 C4       .D
                 txa                          ; F482= 8A          .
                 pha                          ; F483= 48          H
