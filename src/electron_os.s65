@@ -1,12 +1,13 @@
 ; -*- comment-column:45; -*-
 
 LC380=$c380                        ; referred to by disassembled table
-LEA92=$ea92
-LD856=$d856                     ; reference to default page 2 contents
-LE89A=$e89a                     ; ???
-LEA8E=$ea8e                     ; ???
+;LEA92=$ea92
+;LD856=$d856                     ; reference to default page 2 contents
+;LE89A=$e89a                     ; ???
+;LEA8E=$ea8e                     ; ???
+LED4E=$ed4e
 LEA64=$ea64                     ; referred to by disassembled table
-LF00B=$f00b                     ; possibly offset reference to table?
+;LF00B=$f00b                     ; possibly offset reference to table?
 LFFED=$ffed
 LFFFF=$ffff
 
@@ -4684,7 +4685,7 @@ LD965:
                 jsr LDADA                    ; Convert mode number into ULA mode setting
                 ora #$84                     ; D96B= 09 84       ..
                 .if version==300
-                jsr LDAC7_300
+                jsr LE3C1_300
                 .else
                 sta $0282                    ; D96D= 8D 82 02    ...
                 sta LFE07                    ; D970= 8D 07 FE    ..~
@@ -5002,9 +5003,9 @@ LDB47:
                 pha                          ; DB4C= 48          H
                 tya                          ; DB4D= 98          .
                 pha                          ; DB4E= 48          H
-                lda #$DB                     ; DB4F= A9 DB       )[
+                lda #>LDB82-1                ; DB4F= A9 DB       )[
                 pha                          ; DB51= 48          H
-                lda #$81                     ; DB52= A9 81       ).
+                lda #<LDB82-1                ; DB52= A9 81       ).
                 pha                          ; DB54= 48          H
                 ldy LFE00                    ; DB55= AC 00 FE    ,.~
                 tya                          ; DB58= 98          .
@@ -6702,7 +6703,11 @@ LE5F2:
                 bne LE5EF                    ; If X<>0, jump to return X=0
                 brk
                 .byte $F7
+                .if version==300
+                .text "OS 3.00"
+                .else
                 .text "OS 1.00"
+                .endif
                 brk
 
 LE5FE:
@@ -7307,8 +7312,12 @@ LE950:
                 inc $0824                    ; E95B= EE 24 08    n$.
                 ldx $0824                    ; E95E= AE 24 08    .$.
                 lda LE893,x                  ; E961= BD 93 E8    =.h
+                .if version==300
+                ldx $0295
+                .else
                 ldx $0292                    ; E964= AE 92 02    ...
-                eor LE89A,x                  ; E967= 5D 9A E8    ].h
+                .endif
+                eor LE893+7,x                  ; E967= 5D 9A E8    ].h
                 and $0822                    ; E96A= 2D 22 08    -".
                 ora $0823                    ; E96D= 0D 23 08    .#.
                 sta LFE06                    ; ULA counter
@@ -7432,7 +7441,7 @@ LEA26:
                 lda LED2D,x                  ; EA3C= BD 2D ED    =-m
                 bne LEA1B                    ; EA3F= D0 DA       PZ
 LEA41:
-                lda LEA8E,x                  ; EA41= BD 8E EA    =.j
+                lda *+77,x                   ; EA41= BD 8E EA    =.j
                 sta $0821                    ; EA44= 8D 21 08    .!.
                 bne LEA19                    ; EA47= D0 D0       PP
 LEA49:
@@ -7503,13 +7512,11 @@ LEA8A:
                 .byte $F0
                 ;ror $A9,x                    ; EA91= 76 A9       v)
                 .byte $76
-                .byte $A9
-                .byte $EF                    ; EA93= EF          o
-                ;sta $F5                      ; EA94= 85 F5       .u
-                .byte $85
-                .byte $F5
-                ;rts                          ; EA96= 60          `
-                .byte $60
+
+LEA92:
+                lda #$ef
+                sta $f5
+                rts
 
 LEA97:
                 inc $F5                      ; EA97= E6 F5       fu
@@ -7545,7 +7552,11 @@ LEABF:
                 and #$7F                     ; EAC3= 29 7F       ).
                 pha                          ; EAC5= 48          H
                 lda #$10                     ; EAC6= A9 10       ).
+                .if version==300
+                and $025a
+                .else
                 bit $025A                    ; EAC8= 2C 5A 02    ,Z.
+                .endif
                 bne LEAD1                    ; EACB= D0 04       P.
                 pla                          ; EACD= 68          h
                 ora #$80                     ; EACE= 09 80       ..
@@ -7692,7 +7703,7 @@ LEB9A:
 LEBA9:
                 rol $0277                    ; Func not pressed...
                 bcc LEBB6
-                lda LF00B,x                  ; Translate Func+Keypress
+                lda LF018-13,x              ; Translate Func+Keypress
                 bcs LEBC3                    ; Jump to insert in buffer
 
 LEBB3:
@@ -7939,7 +7950,11 @@ LEC95:
                 stx $FB
                 ldx #$00                     ; ECB9= A2 00       ".
 LECBB:
+                .if version==300
+                jsr LED5A_300
+                .else
                 jsr LED38                    ; Read this column
+                .endif
                 and #$0F                     ; If nothing pressed, skip to check next column
                 beq LECF2
                 ldy #$04                     ; ECC2= A0 04        .
@@ -7993,7 +8008,11 @@ LECF8:
                 lsr a                        ; Divide by four
                 lsr a
                 tax
+                .if version==300
+                lda LED18,x
+                .else
                 lda LED18-1,x                ; Get high byte of address of this key
+                .endif
                 sta $FB
                 sta $02C2
                 lda LED26-1,x                ; Get low byte of address of this key
@@ -8094,7 +8113,11 @@ LED85:
                 and #$0F                     ; Check all row bits
                 beq LEDB6                    ; Nothing pressed
 LED9E:
+                .if version==300
+                jsr LED5A_300
+                .else
                 jsr LED38                    ; Read keypress location
+                .endif
                 and #$0F                     ; EDA1= 29 0F       ).
                 beq LEDAA                    ; EDA3= F0 05       p.
                 jsr LEC64                    ; EDA5= 20 64 EC     dl
@@ -8365,7 +8388,11 @@ LEED5:
                 jsr LF9BA                    ; Print inline text, corrupting FS workspace at &B8/9
 LEEDD:
                 .byte 13
+                .if version==300
+                .text "OS 3.00"
+                .else
                 .text "OS 1.00"
+                .endif
                 .byte 13
                 .byte 0
                 rts
@@ -8486,108 +8513,40 @@ LEF1C:
                 .byte $04
                 .byte $05
 LEF59:
-                eor ($55,x)                  ; EF59= 41 55       AU
-                .byte $54                    ; EF5B= 54          T
-                .byte $4F                    ; EF5C= 4F          O
-                ;eor ($45)                    ; EF5D= 52 45       RE
-                .byte $52
-                .byte $45
-                lsr $4D55                    ; EF5F= 4E 55 4D    NUM
-                .byte $42                    ; EF62= 42          B
-                eor $52                      ; EF63= 45 52       ER
-                .byte $43                    ; EF65= 43          C
-                .byte $4F                    ; EF66= 4F          O
-                jmp $554F                    ; EF67= 4C 4F 55    LOU
-
-                ;eor ($44)                    ; EF6A= 52 44       RD
-                .byte $52
-                .byte $44
-                ;eor ($41)                    ; EF6C= 52 41       RA
-                .byte $52
-                .byte $41
-                .byte $57                    ; EF6E= 57          W
-                eor $4C                      ; EF6F= 45 4C       EL
-                .byte $53                    ; EF71= 53          S
-                eor $46                      ; EF72= 45 46       EF
-                .byte $4F                    ; EF74= 4F          O
-                ;eor ($47)                    ; EF75= 52 47       RG
-                .byte $52
-                .byte $47
-                .byte $4F                    ; EF77= 4F          O
-                .byte $54                    ; EF78= 54          T
-                .byte $4F                    ; EF79= 4F          O
-                .byte $44                    ; EF7A= 44          D
-                eor $47                      ; EF7B= 45 47       EG
-                eor #$4E                     ; EF7D= 49 4E       IN
-                bvc LEFD6                    ; EF7F= 50 55       PU
-                .byte $54                    ; EF81= 54          T
-                ;eor ($41)                    ; EF82= 52 41       RA
-                .byte $52
-                .byte $41
-                .byte $44                    ; EF84= 44          D
-                .byte $43                    ; EF85= 43          C
-                pha                          ; EF86= 48          H
-                eor ($49,x)                  ; EF87= 41 49       AI
-                lsr $494C                    ; EF89= 4E 4C 49    NLI
-                .byte $53                    ; EF8C= 53          S
-                .byte $54                    ; EF8D= 54          T
-                eor $444F                    ; EF8E= 4D 4F 44    MOD
-                eor $4E                      ; EF91= 45 4E       EN
-                eor $58                      ; EF93= 45 58       EX
-                .byte $54                    ; EF95= 54          T
-                .byte $4F                    ; EF96= 4F          O
-                jmp $0D44                    ; EF97= 4C 44 0D    LD.
-
-                bvc LEFE8                    ; EF9A= 50 4C       PL
-                .byte $4F                    ; EF9C= 4F          O
-                .byte $54                    ; EF9D= 54          T
-                jmp $434F                    ; EF9E= 4C 4F 43    LOC
-
-                eor ($4C,x)                  ; EFA1= 41 4C       AL
-                ;eor ($55)                    ; EFA3= 52 55       RU
-                .byte $52
-                .byte $55
-                lsr $530D                    ; EFA5= 4E 0D 53    N.S
-                .byte $54                    ; EFA8= 54          T
-                eor $50                      ; EFA9= 45 50       EP
-                .byte $54                    ; EFAB= 54          T
-                pha                          ; EFAC= 48          H
-                eor $4E                      ; EFAD= 45 4E       EN
-                eor $4E,x                    ; EFAF= 55 4E       UN
-                .byte $54                    ; EFB1= 54          T
-                eor #$4C                     ; EFB2= 49 4C       IL
-                lsr $44,x                    ; EFB4= 56 44       VD
-                eor $52,x                    ; EFB6= 55 52       UR
-                eor $53                      ; EFB8= 45 53       ES
-                .byte $54                    ; EFBA= 54          T
-                .byte $4F                    ; EFBB= 4F          O
-                ;eor ($45)                    ; EFBC= 52 45       RE
-                .byte $52
-                .byte $45
-LEFBE:
-                bvc LF012                    ; EFBE= 50 52       PR
-                .byte $4F                    ; EFC0= 4F          O
-                .byte $43                    ; EFC1= 43          C
-                ;eor ($45)                    ; EFC2= 52 45       RE
-                .byte $52
-                .byte $45
-                bvc LF00B                    ; EFC4= 50 45       PE
-                eor ($54,x)                  ; EFC6= 41 54       AT
-                eor $4E                      ; EFC8= 45 4E       EN
-                .byte $44                    ; EFCA= 44          D
-                jmp $414F                    ; EFCB= 4C 4F 41    LOA
-
-                .byte $44                    ; EFCE= 44          D
-                .byte $53                    ; EFCF= 53          S
-                eor ($56,x)                  ; EFD0= 41 56       AV
-                eor $50                      ; EFD2= 45 50       EP
-                ;eor ($49)                    ; EFD4= 52 49       RI
-                .byte $52
-                .byte $49
-LEFD6:
-                lsr $5B54                    ; EFD6= 4E 54 5B    NT[
-                lsr $5F7C,x                  ; EFD9= 5E 7C 5F    ^|_
-                rts                          ; EFDC= 60          `
+                .text "AUTO"
+                .text "RENUMBER"
+                .text "COLOUR"
+                .text "DRAW"
+                .text "ELSE"
+                .text "FOR"
+                .text "GOTO"
+                .text "DEG"
+                .text "INPUT"
+                .text "RAD"
+                .text "CHAIN"
+                .text "LIST"
+                .text "MODE"
+                .text "NEXT"
+                .text "OLD",13
+                .text "PLOT"
+                .text "LOCAL"
+                .text "RUN",13
+                .text "STEP"
+                .text "THEN"
+                .text "UNTIL"
+                .text "VDU"
+                .text "RESTORE"
+                .text "PROC"
+                .text "REPEAT"
+                .text "END"
+                .text "LOAD"
+                .text "SAVE"
+                .text "PRINT"
+                .text "["
+                .text "^"
+                .text "|"
+                .text "_"
+                .text "`"
 
 ; Read bottom of user memory
 ; --------------------------
@@ -8801,7 +8760,7 @@ LF094:
                 jsr LDDBA                    ; F096= 20 BA DD     :]
                 ldx #$0E                     ; F099= A2 0E       ".
 LF09B:
-                lda LD856,x                  ; F09B= BD 56 D8    =VX
+                lda LD845+$11,x                  ; F09B= BD 56 D8    =VX
                 sta $0211,x                  ; F09E= 9D 11 02    ...
                 dex                          ; F0A1= CA          J
                 bne LF09B                    ; F0A2= D0 F7       Pw
@@ -10154,7 +10113,11 @@ LF8C9:
 
 LF8DA:
                 inc $B1                      ; F8DA= E6 B1       f1
+                .if version==300
+                bne LF8E4
+                .else
                 bne LF8E0                    ; F8DC= D0 02       P.
+                .endif
                 inc $B2                      ; F8DE= E6 B2       f2
 LF8E0:
                 bne LF8E4                    ; F8E0= D0 02       P.
@@ -10237,15 +10200,27 @@ LF934:
                 jsr LF9E2                    ; F93C= 20 E2 F9     by
                 php                          ; F93F= 08          .
                 ldx #$FF                     ; F940= A2 FF       ".
+                .if version==300
+                ldy #$31
+                .else
                 ldy #$09                     ; F942= A0 09        .
+                .endif
                 lda #$FA                     ; F944= A9 FA       )z
                 plp                          ; F946= 28          (
                 bne LF965                    ; F947= D0 1C       P.
 LF949:
+                .if version==300
+                ldy #$26
+                .else
                 ldy #$FE                     ; F949= A0 FE        ~
+                .endif
                 lda $C1                      ; F94B= A5 C1       %A
                 beq LF953                    ; F94D= F0 04       p.
+                .if version==300
+                lda #$fa
+                .else
                 lda #$F9                     ; F94F= A9 F9       )y
+                .endif
                 bne LF965                    ; F951= D0 12       P.
 LF953:
                 lda $03C6                    ; F953= AD C6 03    -F.
@@ -10255,7 +10230,11 @@ LF953:
                 cmp $B5                      ; F95D= C5 B5       E5
                 beq LF974                    ; F95F= F0 13       p.
 LF961:
+                .if version==300
+                ldy #$3c
+                .else
                 ldy #$14                     ; F961= A0 14        .
+                .endif
                 lda #$FA                     ; F963= A9 FA       )z
 LF965:
                 pha                          ; F965= 48          H
@@ -10285,8 +10264,13 @@ LF974:
                 lda $BE                      ; F97E= A5 BE       %>
                 ora $BF                      ; F980= 05 BF       .?
                 beq LF9FD                    ; F982= F0 79       py
+                .if version==300
+                ldy #$26
+                lda #$fa
+                .else
                 ldy #$FE                     ; F984= A0 FE        ~
                 lda #$F9                     ; F986= A9 F9       )y
+                .endif
 LF988:
                 dec $BA                      ; F988= C6 BA       F:
                 pha                          ; F98A= 48          H
