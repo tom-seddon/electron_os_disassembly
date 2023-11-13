@@ -1,13 +1,3 @@
-REM > ELK100/SRC
-REM Source for Electron MOS 1.00
-REM Not yet fully commented
-: 
-load%=&C000
-DIM mcode% &4100
-FOR P=0 TO 1
-P%=load%:O%=mcode%
-[OPT P*3+4
-.exec%
 \ CHARACTER SET
 \ =============
 .LC000
@@ -10085,4 +10075,3 @@ TXA:BCS OSBPUT
 .NMIV  :EQUW &0D00          :\ FFFA
 .RSTV  :EQUW LD8D2          :\ FFFC
 .IRQV  :EQUW LDAE7          :\ FFFE
-]NEXT
