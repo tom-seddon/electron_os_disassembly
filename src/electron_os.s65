@@ -10200,27 +10200,15 @@ LF934:
                 jsr LF9E2                    ; F93C= 20 E2 F9     by
                 php                          ; F93F= 08          .
                 ldx #$FF                     ; F940= A2 FF       ".
-                .if version==300
-                ldy #$31
-                .else
-                ldy #$09                     ; F942= A0 09        .
-                .endif
-                lda #$FA                     ; F944= A9 FA       )z
+                ldy #<fileError
+                lda #>fileError
                 plp                          ; F946= 28          (
                 bne LF965                    ; F947= D0 1C       P.
 LF949:
-                .if version==300
-                ldy #$26
-                .else
-                ldy #$FE                     ; F949= A0 FE        ~
-                .endif
+                ldy #<dataError
                 lda $C1                      ; F94B= A5 C1       %A
                 beq LF953                    ; F94D= F0 04       p.
-                .if version==300
-                lda #$fa
-                .else
-                lda #$F9                     ; F94F= A9 F9       )y
-                .endif
+                lda #>dataError
                 bne LF965                    ; F951= D0 12       P.
 LF953:
                 lda $03C6                    ; F953= AD C6 03    -F.
@@ -10230,12 +10218,8 @@ LF953:
                 cmp $B5                      ; F95D= C5 B5       E5
                 beq LF974                    ; F95F= F0 13       p.
 LF961:
-                .if version==300
-                ldy #$3c
-                .else
-                ldy #$14                     ; F961= A0 14        .
-                .endif
-                lda #$FA                     ; F963= A9 FA       )z
+                ldy #<blockError
+                lda #>blockError
 LF965:
                 pha                          ; F965= 48          H
                 tya                          ; F966= 98          .
@@ -10264,13 +10248,8 @@ LF974:
                 lda $BE                      ; F97E= A5 BE       %>
                 ora $BF                      ; F980= 05 BF       .?
                 beq LF9FD                    ; F982= F0 79       py
-                .if version==300
-                ldy #$26
-                lda #$fa
-                .else
-                ldy #$FE                     ; F984= A0 FE        ~
-                lda #$F9                     ; F986= A9 F9       )y
-                .endif
+                ldy #<dataError
+                lda #>dataError
 LF988:
                 dec $BA                      ; F988= C6 BA       F:
                 pha                          ; F98A= 48          H
@@ -10361,31 +10340,20 @@ LF9FB:
 LF9FD:
                 rts                          ; F9FD= 60          `
 
-                brk                          ; F9FE= 00          .
-                cld                          ; F9FF= D8          X
-                ora $6144                    ; FA00= 0D 44 61    .Da
-                ;stz $61,x                    ; FA03= 74 61       ta
-                .byte $74
-                .byte $61
-                .byte $3F                    ; FA05= 3F          ?
-                brk                          ; FA06= 00          .
-                bne LFA1E                    ; FA07= D0 15       P.
-                brk                          ; FA09= 00          .
-                .byte $DB                    ; FA0A= DB          [
-                ora $6946                    ; FA0B= 0D 46 69    .Fi
-                jmp ($3F65)                  ; FA0E= 6C 65 3F    le?
+dataError:
+                brk
+                .text $d8,13,"Data?",0
 
-                brk                          ; FA11= 00          .
+                bne LFA1E                    ; FA07= D0 15       P.
+
+fileError:
+                brk
+                .text $db,13,"File?",0
+
                 bne LFA1E                    ; FA12= D0 0A       P.
-                brk                          ; FA14= 00          .
-                ;phx                          ; FA15= DA          Z
-                .byte $DA
-                ora $6C42                    ; FA16= 0D 42 6C    .Bl
-                .byte $6F                    ; FA19= 6F          o
-                .byte $63                    ; FA1A= 63          c
-                .byte $6B                    ; FA1B= 6B          k
-                .byte $3F                    ; FA1C= 3F          ?
-                brk                          ; FA1D= 00          .
+blockError:      
+                brk
+                .text $da,13,"Block?",0
 LFA1E:
                 lda $BA                      ; FA1E= A5 BA       %:
                 beq LFA44                    ; FA20= F0 22       p"
@@ -10398,13 +10366,6 @@ LFA1E:
                 ldy #$FF                     ; Print inline text
                 jsr LF9BA
                 .text 13,7,"Rewind tape",13,13,0
-                ; ora $5207                    ; FA33= 0D 07 52    ..R
-                ; adc $77                      ; FA36= 65 77       ew
-                ; adc #$6E                     ; FA38= 69 6E       in
-                ; stz $20                      ; FA3A= 64 20       d
-                ; stz $61,x                    ; FA3C= 74 61       ta
-                ; bvs LFAA5                    ; FA3E= 70 65       pe
-                ; ora $000D                    ; FA40= 0D 0D 00    ...
 LFA43:
                 rts                          ; FA43= 60          `
 
