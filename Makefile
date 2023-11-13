@@ -40,8 +40,8 @@ DIST:=dist
 .PHONY:all
 all:
 	$(_V)$(SHELLCMD) mkdir "$(BUILD)"
-	$(_V)$(TASS) src/elk100.s65 "-L$(BUILD)/elk100.lst" -o "$(BUILD)/elk100.rom"
-	$(_V)$(TASS) src/elk100.s65 -Dversion=300 "-L$(BUILD)/os300.lst" -o "$(BUILD)/os300.rom"
+	$(_V)$(TASS) src/electron_os.s65 "-L$(BUILD)/elk100.lst" -o "$(BUILD)/elk100.rom"
+	$(_V)$(TASS) src/electron_os.s65 -Dversion=300 "-L$(BUILD)/os300.lst" -o "$(BUILD)/os300.rom"
 	$(_V)$(PYTHON) bin/romdiffs.py $(_ROM_DIFF_MUST_MATCH) -a orig -b "$(BUILD)" elk100.rom os300.rom
 
 ##########################################################################
