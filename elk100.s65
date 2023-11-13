@@ -4731,7 +4731,7 @@ LDA52:
                 ldx #<LF009                  ; Point to "/!BOOT"
                 ldy #>LF009
                 dec $0267                    ; Set 'errors return to Reset handler'
-                jsr OS_CLI                   ; Do */!BOOT
+                jsr OSCLI                   ; Do */!BOOT
                 inc $0267                    ; Clear 'error return to Reset handler'
                 bne LDA88
 
@@ -10815,7 +10815,7 @@ OSWORD:                                      ; FFF1
                 jmp ($020C)
 OSBYTE:                                      ; FFF4
                 jmp ($020A)
-OS_CLI:                                      ; FFF7
+OSCLI:                                      ; FFF7
                 jmp ($0208)
 NMIV:                                        ; FFFA
                 .word $0D00
