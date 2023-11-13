@@ -7914,7 +7914,10 @@ LED18:                                       ;         b0  b1  b2  b3
 
 ; (keynum DIV 4) low byte
 LED26:
-                inc LFBFD,x                  ; ED26= FE FD FB    ~}{
+                ;inc LFBFD,x                  ; ED26= FE FD FB    ~}{
+                .byte $FE
+                .byte $FD
+                .byte $FB
                 .byte $F7                    ; ED29= F7          w
                 .byte $EF                    ; ED2A= EF          o
                 .byte $DF                    ; ED2B= DF          _
@@ -10482,148 +10485,12 @@ LFB6B:
                 pla                          ; FB70= 68          h
                 jmp $0406                    ; FB71= 4C 06 04    L..
 
-                brk                          ; FB74= 00          .
-                brk                          ; FB75= 00          .
-                brk                          ; FB76= 00          .
-                brk                          ; FB77= 00          .
-                brk                          ; FB78= 00          .
-                brk                          ; FB79= 00          .
-                brk                          ; FB7A= 00          .
-                brk                          ; FB7B= 00          .
-                brk                          ; FB7C= 00          .
-                brk                          ; FB7D= 00          .
-                brk                          ; FB7E= 00          .
-                brk                          ; FB7F= 00          .
-                brk                          ; FB80= 00          .
-                brk                          ; FB81= 00          .
-                brk                          ; FB82= 00          .
-                brk                          ; FB83= 00          .
-                brk                          ; FB84= 00          .
-                brk                          ; FB85= 00          .
-                brk                          ; FB86= 00          .
-                brk                          ; FB87= 00          .
-                brk                          ; FB88= 00          .
-                brk                          ; FB89= 00          .
-                brk                          ; FB8A= 00          .
-                brk                          ; FB8B= 00          .
-                brk                          ; FB8C= 00          .
-                brk                          ; FB8D= 00          .
-                brk                          ; FB8E= 00          .
-                brk                          ; FB8F= 00          .
-                brk                          ; FB90= 00          .
-                brk                          ; FB91= 00          .
-                brk                          ; FB92= 00          .
-                brk                          ; FB93= 00          .
-                brk                          ; FB94= 00          .
-                brk                          ; FB95= 00          .
-                brk                          ; FB96= 00          .
-                brk                          ; FB97= 00          .
-                brk                          ; FB98= 00          .
-                brk                          ; FB99= 00          .
-                brk                          ; FB9A= 00          .
-                brk                          ; FB9B= 00          .
-                brk                          ; FB9C= 00          .
-                brk                          ; FB9D= 00          .
-                brk                          ; FB9E= 00          .
-                brk                          ; FB9F= 00          .
-                brk                          ; FBA0= 00          .
-                brk                          ; FBA1= 00          .
-                brk                          ; FBA2= 00          .
-                brk                          ; FBA3= 00          .
-                brk                          ; FBA4= 00          .
-                brk                          ; FBA5= 00          .
-                brk                          ; FBA6= 00          .
-                brk                          ; FBA7= 00          .
-                brk                          ; FBA8= 00          .
-                brk                          ; FBA9= 00          .
-                brk                          ; FBAA= 00          .
-                brk                          ; FBAB= 00          .
-                brk                          ; FBAC= 00          .
-                brk                          ; FBAD= 00          .
-                brk                          ; FBAE= 00          .
-                brk                          ; FBAF= 00          .
-                brk                          ; FBB0= 00          .
-                brk                          ; FBB1= 00          .
-                brk                          ; FBB2= 00          .
-                brk                          ; FBB3= 00          .
-                brk                          ; FBB4= 00          .
-                brk                          ; FBB5= 00          .
-                brk                          ; FBB6= 00          .
-                brk                          ; FBB7= 00          .
-                brk                          ; FBB8= 00          .
-                brk                          ; FBB9= 00          .
-                brk                          ; FBBA= 00          .
-                brk                          ; FBBB= 00          .
-                brk                          ; FBBC= 00          .
-                brk                          ; FBBD= 00          .
-                brk                          ; FBBE= 00          .
-                brk                          ; FBBF= 00          .
-                brk                          ; FBC0= 00          .
-                brk                          ; FBC1= 00          .
-                brk                          ; FBC2= 00          .
-                brk                          ; FBC3= 00          .
-                brk                          ; FBC4= 00          .
-                brk                          ; FBC5= 00          .
-                brk                          ; FBC6= 00          .
-                brk                          ; FBC7= 00          .
-                brk                          ; FBC8= 00          .
-                brk                          ; FBC9= 00          .
-                brk                          ; FBCA= 00          .
-                brk                          ; FBCB= 00          .
-                brk                          ; FBCC= 00          .
-                brk                          ; FBCD= 00          .
-                brk                          ; FBCE= 00          .
-                brk                          ; FBCF= 00          .
-                brk                          ; FBD0= 00          .
-                brk                          ; FBD1= 00          .
-                brk                          ; FBD2= 00          .
-                brk                          ; FBD3= 00          .
-                brk                          ; FBD4= 00          .
-                brk                          ; FBD5= 00          .
-                brk                          ; FBD6= 00          .
-                brk                          ; FBD7= 00          .
-                brk                          ; FBD8= 00          .
-                brk                          ; FBD9= 00          .
-                brk                          ; FBDA= 00          .
-                brk                          ; FBDB= 00          .
-                brk                          ; FBDC= 00          .
-                brk                          ; FBDD= 00          .
-                brk                          ; FBDE= 00          .
-                brk                          ; FBDF= 00          .
-                brk                          ; FBE0= 00          .
-                brk                          ; FBE1= 00          .
-                brk                          ; FBE2= 00          .
-                brk                          ; FBE3= 00          .
-                brk                          ; FBE4= 00          .
-                brk                          ; FBE5= 00          .
-                brk                          ; FBE6= 00          .
-                brk                          ; FBE7= 00          .
-                brk                          ; FBE8= 00          .
-                brk                          ; FBE9= 00          .
-                brk                          ; FBEA= 00          .
-                brk                          ; FBEB= 00          .
-                brk                          ; FBEC= 00          .
-                brk                          ; FBED= 00          .
-                brk                          ; FBEE= 00          .
-                brk                          ; FBEF= 00          .
-                brk                          ; FBF0= 00          .
-                brk                          ; FBF1= 00          .
-                brk                          ; FBF2= 00          .
-                brk                          ; FBF3= 00          .
-                brk                          ; FBF4= 00          .
-                brk                          ; FBF5= 00          .
-                brk                          ; FBF6= 00          .
-                brk                          ; FBF7= 00          .
-                brk                          ; FBF8= 00          .
-                brk                          ; FBF9= 00          .
-                brk                          ; FBFA= 00          .
-                brk                          ; FBFB= 00          .
-                brk                          ; FBFC= 00          .
-LFBFD:
-                brk                          ; FBFD= 00          .
-                ;jsr LFFED                    ; FBFE= 20 ED FF     m.
-                .byte $20
-                .byte $ed
+                .fill $fbfe-*,0
+
+                ; This doesn't seem to be used, and doesn't seem to
+                ; refer to anything meaningful.
+                .byte $20                    ; ???
+                .byte $ed                    ; ???
 
                 .text "(C) 1983 Acorn Computers Ltd."
                 .text "Thanks are due to the following contributors to the development of the Electron (among others too numerous to mention):- "
