@@ -1,5 +1,9 @@
 ; -*- comment-column:45; -*-
 
+                .weak
+version=100
+                .endweak
+
 LC380=$c380                        ; referred to by disassembled table
 LEA92=$ea92
 LD856=$d856                     ; reference to default page 2 contents
@@ -25,6 +29,29 @@ LFE06=$fe06
 LFE07=$fe07
 LFE08=$fe08
 
+                .if version==300
+
+                ; Bodge area
+L9FFD_300=$9ffd
+LDAC7_300=$dac7
+LDC23_300=LDC36
+LE3C1_300=$e3c1
+LE2CC_300=$e2cc
+LED16_300:=$ed16
+;LED5A_300:=$ed5a
+;LE756_300=$e756
+;LE759_300=$e759
+;LE75C_300=$e75c
+;LE75F_300=$e75f
+;LE762_300=$e762
+;LE765_300=$e765
+;LE768_300=$e768
+;LF0B5_300=$f0b5
+;LFBF7_300=$fbf7
+
+LFC7F=$fc7f
+                .endif
+                
 vduRoutinesPage=$c3
                 
 extendedVectorSpace=$d9f
@@ -1323,6 +1350,14 @@ LC42B:
                 .byte %01111110
                 .byte %00111100
 
+                .if version==300
+message64K:
+                .text '64K',0
+messageTURBO:
+                .text 'TURBO',0
+                .cerror (>message64K)!=(>messageTURBO)
+                .endif
+
 LC433:
                 ldx $026A                    ; Jump if VDU queue not empty
                 bne LC48C
@@ -1703,7 +1738,11 @@ LC6AA:
 LC6AD:
                 ldy #$03                     ; C6AD= A0 03        .
 LC6AF:
+                .if version==300
+                jsr LE75C_300
+                .else
                 lda ($F0),y                  ; C6AF= B1 F0       1p
+                .endif
                 sta $0328,y                  ; C6B1= 99 28 03    .(.
                 dey                          ; C6B4= 88          .
                 bpl LC6AF                    ; C6B5= 10 F8       .x
@@ -1740,7 +1779,11 @@ LC6E5:
 LC6EC:
                 iny                          ; C6EC= C8          H
 LC6ED:
+                .if version==300
+                jsr LE75F_300
+                .else
                 sta ($F0),y                  ; C6ED= 91 F0       .p
+                .endif
                 lda #$00                     ; C6EF= A9 00       ).
                 cpy #$04                     ; C6F1= C0 04       @.
                 bne LC6EC                    ; C6F3= D0 F7       Pw
@@ -1995,7 +2038,11 @@ LC88D:
 LC89D:
                 tax                          ; C89D= AA          *
                 iny                          ; C89E= C8          H
+                .if version==300
+                jsr LE75C_300
+                .else
                 lda ($F0),y                  ; C89F= B1 F0       1p
+                .endif
                 bcs LC847                    ; C8A1= B0 A4       0$
 LC8A3:
                 lda $D8                      ; C8A3= A5 D8       %X
@@ -2075,7 +2122,11 @@ LC900:
                 sty $DC                      ; C91F= 84 DC       .\
 LC921:
                 lda ($DC),y                  ; C921= B1 DC       1\
+                .if version==300
+                jsr LE756_300
+                .else
                 sta ($DA),y                  ; C923= 91 DA       .Z
+                .endif
                 dey                          ; C925= 88          .
                 bne LC921                    ; C926= D0 F9       Py
 LC928:
@@ -2377,6 +2428,17 @@ LCB21:
                 ldx #$7F                     ; CB2B= A2 7F       ".
                 stx $0366                    ; CB2D= 8E 66 03    .f.
 LCB30:
+                .if version==300
+                jsr LDAC7_300
+                php
+                sei
+                sta $0355
+                lda $0282
+                and #$C7
+                ora $0355
+                jsr LE3C1_300
+                stx $0355
+                .else
                 jsr LDADA                    ; CB30= 20 DA DA     ZZ
                 stx $0355                    ; CB33= 8E 55 03    .U.
                 php                          ; CB36= 08          .
@@ -2387,6 +2449,7 @@ LCB30:
                 ora $02F4                    ; CB40= 0D F4 02    .t.
                 sta $0282                    ; CB43= 8D 82 02    ...
                 sta LFE07                    ; CB46= 8D 07 FE    ..~
+                .endif
                 plp                          ; CB49= 28          (
                 lda LC3CF,x                  ; CB4A= BD CF C3    =OC
                 sta $0360                    ; CB4D= 8D 60 03    .`.
@@ -2536,7 +2599,11 @@ LCC40:
                 jsr LCF4F                    ; CC40= 20 4F CF     OO
                 ldy #$00                     ; CC43= A0 00        .
 LCC45:
+                .if version==300
+                jsr LE759_300
+                .else
                 lda ($DC),y                  ; CC45= B1 DC       1\
+                .endif
                 iny                          ; CC47= C8          H
                 sta ($F0),y                  ; CC48= 91 F0       .p
                 cpy #$08                     ; CC4A= C0 08       @.
@@ -3162,6 +3229,12 @@ LD015:
                 eor $DF                      ; D019= 45 DF       E_
                 sta ($D4),y                  ; D01B= 91 D4       .T
                 rts                          ; D01D= 60          `
+
+                .if version==300
+LD02A_300:
+                sta $7fff
+                rts
+                .endif
 
 LD01E:
                 ldx #$24                     ; D01E= A2 24       "$
@@ -3904,7 +3977,11 @@ LD4EB:
                 tay                          ; D4F5= A8          (
 LD4F6:
                 lda $0310,x                  ; D4F6= BD 10 03    =..
+                .if version==300
+                jsr LE75F_300
+                .else
                 sta ($F0),y                  ; D4F9= 91 F0       .p
+                .endif
                 dey                          ; D4FB= 88          .
                 dex                          ; D4FC= CA          J
                 bpl LD4F6                    ; D4FD= 10 F7       .w
@@ -4382,11 +4459,16 @@ LD834:
 ; OSBYTE &85 - Read top of user memory for specified MODE
 ; -------------------------------------------------------
 LD837:
+                .if version==300
+                lda $027f
+                bmi LD841
+                .endif
                 txa                          ; D837= 8A          .
                 and #$07                     ; D838= 29 07       ).
                 tay                          ; D83A= A8          (
                 ldx LC3FB,y                  ; D83B= BE FB C3    >{C
                 lda LC40B,x                  ; D83E= BD 0B C4    =.D
+LD841:
                 ldx #$00                     ; D841= A2 00       ".
                 tay                          ; D843= A8          (
                 rts                          ; D844= 60          `
@@ -4527,6 +4609,11 @@ LD8D2:
                 lsr a                        ; Divide by 2
                 cmp #$01                     ; Not *FX200,2 or *FX200,3, skip past
                 bne LD912
+
+                .if version==300
+LD8FB:
+                jsr LE768_300
+                .else
                 lsr a                        ; Divide by 2 again to give A=0
 
 ; Clear memory if PowerOn or *FX200,2/3
@@ -4542,6 +4629,7 @@ LD902:
                 iny                          ; Step from &00 to &01 to skip &0D00
                 inc $01                      ; Loop until (&00/1)=&8000
                 bpl LD902
+                .endif
                 sta $028E                    ; MaxMemSize=&00
                 stx $0284                    ; Set soft keys as inconsistant
 
@@ -4599,8 +4687,12 @@ LD965:
                 lda $028F                    ; Get startup options
                 jsr LDADA                    ; Convert mode number into ULA mode setting
                 ora #$84                     ; D96B= 09 84       ..
+                .if version==300
+                jsr LDAC7_300
+                .else
                 sta $0282                    ; D96D= 8D 82 02    ...
                 sta LFE07                    ; D970= 8D 07 FE    ..~
+                .endif
                 sta LFE04                    ; D973= 8D 04 FE    ..~
                 ldx #$0C                     ; D976= A2 0C       ".
                 stx $025B                    ; D978= 8E 5B 02    .[.
@@ -4620,13 +4712,21 @@ LD98B:
 LD993:
                 lda $8000,y                  ; Get byte from ROM
                 cmp LDC97,x                  ; Compare with '(C)'
+                .if version==300
+                bne LD9E0
+                .else
                 bne LD9CF                    ; No match, jump to skip this ROM
+                .endif
                 iny                          ; Step to next byte to check
                 dex                          ; Loop to check four bytes
                 bpl LD993
 
 ; Check if this is a duplicate of a higher ROM
                 ldx $F4                      ; D99F= A6 F4       &t
+                .if version==300
+                cpx #$a
+                beq LD9E0
+                .else
                 txa                          ; D9A1= 8A          .
                 tay                          ; D9A2= A8          (
 LD9A3:
@@ -4655,6 +4755,7 @@ LD9B1:
 LD9CF:
                 ldx $F4                      ; D9CF= A6 F4       &t
                 bpl LD9E0                    ; D9D1= 10 0D       ..
+                .endif
 
 ; This ROM is not a duplicate
 LD9D3:
@@ -4664,10 +4765,15 @@ LD9D3:
                 bne LD9E0                    ; If not 6502 BASIC, skip past
                 stx $024B                    ; Store as BASIC
 LD9E0:
+                .if version==300
+                ldx $f4
+                .endif
                 inx                          ; Step to next ROM
                 cpx #$10                     ; Loop until all 16 ROMs done
                 bcc LD98B
-
+                .if version==300
+                jsr LF0B5_300
+                .endif
                 lda $028F                    ; Get startup options
                 jsr LC300                    ; Use it to select screen mode
                 ldy #$CA                     ; Enter f10 into keyboard buffer
@@ -4710,6 +4816,20 @@ LDA16:
                 beq LDA4D
                 lda #$07                     ; Beep
                 jsr OSWRCH
+
+                .if version==300
+                ldy #<message64K-1
+                lda $027f
+                beq LDA31_300
+                bmi LDA2A_300
+                ldy #<messageTURBO-1
+LDA2A_300:
+                lda #>message64K
+                jsr LDC23_300
+                beq LDA4D
+LDA31_300:
+                .endif
+                
                 jsr LD6DE                    ; Store software cursor
                 jsr LCED5                    ; Copy Electron Acorn bitmap to cursor store
                 jsr LD6DE                    ; Restore software cursor to draw the Acorn bitmap
@@ -5028,7 +5148,11 @@ LDC36:
                 sta $FD                      ; DC3A= 85 FD       .}
 LDC3C:
                 iny                          ; DC3C= C8          H
+                .if version==300
+                jsr LE765_300
+                .else
                 lda ($FD),y                  ; DC3D= B1 FD       1}
+                .endif
                 jsr OSASCI                   ; DC3F= 20 E3 FF     c.
                 tax                          ; DC42= AA          *
                 bne LDC3C                    ; DC43= D0 F7       Pw
@@ -5149,147 +5273,18 @@ LDC9B:
                 .byte $03
                 .byte $00
 
-LDD14:
-                stx $F2                      ; DD14= 86 F2       .r
-                sty $F3                      ; DD16= 84 F3       .s
-                lda #$08                     ; DD18= A9 08       ).
-                jsr LDDBA                    ; DD1A= 20 BA DD     :]
-                ldy #$00                     ; DD1D= A0 00        .
-LDD1F:
-                lda ($F2),y                  ; DD1F= B1 F2       1r
-                cmp #$0D                     ; DD21= C9 0D       I.
-                beq LDD29                    ; DD23= F0 04       p.
-                iny                          ; DD25= C8          H
-                bne LDD1F                    ; DD26= D0 F7       Pw
-                rts                          ; DD28= 60          `
-
-LDD29:
-                ldy #$FF                     ; DD29= A0 FF        .
-LDD2B:
-                jsr LDDC2                    ; DD2B= 20 C2 DD     B]
-                beq LDDA0                    ; DD2E= F0 70       pp
-                cmp #$2A                     ; DD30= C9 2A       I*
-                beq LDD2B                    ; DD32= F0 F7       pw
-                jsr LDDC3                    ; DD34= 20 C3 DD     C]
-                beq LDDA0                    ; DD37= F0 67       pg
-                cmp #$7C                     ; DD39= C9 7C       I|
-                beq LDDA0                    ; DD3B= F0 63       pc
-                cmp #$2F                     ; DD3D= C9 2F       I/
-                bne LDD49                    ; DD3F= D0 08       P.
-                iny                          ; DD41= C8          H
-                jsr LDD92                    ; DD42= 20 92 DD     .]
-                lda #$02                     ; DD45= A9 02       ).
-                bne LDDBA                    ; DD47= D0 71       Pq
-LDD49:
-                sty $E6                      ; DD49= 84 E6       .f
-                ldx #$00                     ; DD4B= A2 00       ".
-                beq LDD62                    ; DD4D= F0 13       p.
-LDD4F:
-                eor LDC9B,x                  ; DD4F= 5D 9B DC    ].\
-                and #$DF                     ; DD52= 29 DF       )_
-                bne LDD6D                    ; DD54= D0 17       P.
-                iny                          ; DD56= C8          H
-                clc                          ; DD57= 18          .
-LDD58:
-                bcs LDD7D                    ; DD58= B0 23       0#
-                inx                          ; DD5A= E8          h
-                lda ($F2),y                  ; DD5B= B1 F2       1r
-                jsr LE251                    ; DD5D= 20 51 E2     Qb
-                bcc LDD4F                    ; DD60= 90 ED       .m
-LDD62:
-                lda LDC9B,x                  ; DD62= BD 9B DC    =.\
-                bmi LDD7F                    ; DD65= 30 18       0.
-                lda ($F2),y                  ; DD67= B1 F2       1r
-                cmp #$2E                     ; DD69= C9 2E       I.
-                beq LDD71                    ; DD6B= F0 04       p.
-LDD6D:
-                clc                          ; DD6D= 18          .
-                ldy $E6                      ; DD6E= A4 E6       $f
-                dey                          ; DD70= 88          .
-LDD71:
-                iny                          ; DD71= C8          H
-                inx                          ; DD72= E8          h
-LDD73:
-                inx                          ; DD73= E8          h
-                lda LDC9B-2,x                  ; DD74= BD 99 DC    =.\
-                beq LDDAA                    ; DD77= F0 31       p1
-                bpl LDD73                    ; DD79= 10 F8       .x
-                bmi LDD58                    ; DD7B= 30 DB       0[
-LDD7D:
-                dex                          ; DD7D= CA          J
-                dex                          ; DD7E= CA          J
-LDD7F:
-                pha                          ; DD7F= 48          H
-                lda LDC9B+1,x                  ; DD80= BD 9C DC    =.\
-                pha                          ; DD83= 48          H
-                jsr LDDC3                    ; DD84= 20 C3 DD     C]
-                clc                          ; DD87= 18          .
-                php                          ; DD88= 08          .
-                jsr LDD8D                    ; DD89= 20 8D DD     .]
-                rti                          ; DD8C= 40          @
-
-LDD8D:
-                lda LDC9B+2,x                  ; DD8D= BD 9D DC    =.\
-                bmi LDDA0                    ; DD90= 30 0E       0.
-LDD92:
-                tya                          ; DD92= 98          .
-                ldy LDC9B+2,x                  ; DD93= BC 9D DC    <.\
-LDD96:
-                clc                          ; DD96= 18          .
-                adc $F2                      ; DD97= 65 F2       er
-                tax                          ; DD99= AA          *
-                tya                          ; DD9A= 98          .
-                ldy $F3                      ; DD9B= A4 F3       $s
-                bcc LDDA0                    ; DD9D= 90 01       ..
-                iny                          ; DD9F= C8          H
-LDDA0:
-                rts                          ; DDA0= 60          `
-
-LDDA1:
-                ldx $024B                    ; DDA1= AE 4B 02    .K.
-                bmi LDDAA                    ; DDA4= 30 04       0.
-                sec                          ; DDA6= 38          8
-                jmp LDAB1                    ; DDA7= 4C B1 DA    L1Z
-
-LDDAA:
-                ldy $E6                      ; DDAA= A4 E6       $f
-                ldx #$04                     ; DDAC= A2 04       ".
-                jsr LF0A8                    ; DDAE= 20 A8 F0     (p
-                beq LDDA0                    ; DDB1= F0 ED       pm
-                lda $E6                      ; DDB3= A5 E6       %f
-                jsr LDD96                    ; DDB5= 20 96 DD     .]
-                lda #$03                     ; DDB8= A9 03       ).
-LDDBA:
-                jmp ($021E)                  ; DDBA= 6C 1E 02    l..
-
-LDDBD:
-                asl a                        ; DDBD= 0A          .
-LDDBE:
-                and #$01                     ; DDBE= 29 01       ).
-                bpl LDDBA                    ; DDC0= 10 F8       .x
-LDDC2:
-                iny                          ; DDC2= C8          H
-LDDC3:
-                lda ($F2),y                  ; DDC3= B1 F2       1r
-                cmp #$20                     ; DDC5= C9 20       I
-                beq LDDC2                    ; DDC7= F0 F9       py
-LDDC9:
-                cmp #$0D                     ; DDC9= C9 0D       I.
-                rts                          ; DDCB= 60          `
-
-LDDCC:
-                bcc LDDC3                    ; DDCC= 90 F5       .u
-LDDCE:
-                jsr LDDC3                    ; DDCE= 20 C3 DD     C]
-                cmp #$2C                     ; DDD1= C9 2C       I,
-                bne LDDC9                    ; DDD3= D0 F4       Pt
-                iny                          ; DDD5= C8          H
-                rts                          ; DDD6= 60          `
-
+                .if version==100
+                .include "oscli.s65"
+                .endif
+                
 LDDD7:
                 jsr LDDC3                    ; DDD7= 20 C3 DD     C]
                 jsr LDE06                    ; DDDA= 20 06 DE     .^
-                bcc LDE16                    ; DDDD= 90 37       .7
+                .if version==300
+                bcc LDD28_300
+                .else
+                bcc LDE16                    ; DDEA= B0 2A       0*
+                .endif
 LDDDF:
                 sta $E6                      ; DDDF= 85 E6       .f
                 jsr LDE05                    ; DDE1= 20 05 DE     .^
@@ -5297,55 +5292,53 @@ LDDDF:
                 tax                          ; DDE6= AA          *
                 lda $E6                      ; DDE7= A5 E6       %f
                 asl a                        ; DDE9= 0A          .
+                .if version==300
+                bcs LDD28_300
+                .else
                 bcs LDE16                    ; DDEA= B0 2A       0*
+                .endif
                 asl a                        ; DDEC= 0A          .
-                bcs LDE16                    ; DDED= B0 27       0'
+                .if version==300
+                bcs LDD28_300
+                .else
+                bcs LDE16                    ; DDEA= B0 2A       0*
+                .endif
                 adc $E6                      ; DDEF= 65 E6       ef
-                bcs LDE16                    ; DDF1= B0 23       0#
+                .if version==300
+                bcs LDD28_300
+                .else
+                bcs LDE16                    ; DDEA= B0 2A       0*
+                .endif
                 asl a                        ; DDF3= 0A          .
-                bcs LDE16                    ; DDF4= B0 20       0
+                .if version==300
+                bcs LDD28_300
+                .else
+                bcs LDE16                    ; DDEA= B0 2A       0*
+                .endif
                 sta $E6                      ; DDF6= 85 E6       .f
                 txa                          ; DDF8= 8A          .
                 adc $E6                      ; DDF9= 65 E6       ef
-                bcs LDE16                    ; DDFB= B0 19       0.
+                .if version==100
+                bcs LDE16                    ; DDEA= B0 2A       0*
+                .endif
                 bcc LDDDF                    ; DDFD= 90 E0       .`
+                .if version==300
+LDD28_300:
+                clc
+                rts
+                .endif
 LDDFF:
                 ldx $E6                      ; DDFF= A6 E6       &f
                 cmp #$0D                     ; DE01= C9 0D       I.
                 sec                          ; DE03= 38          8
                 rts                          ; DE04= 60          `
 
-LDE05:
-                iny                          ; DE05= C8          H
-LDE06:
-                lda ($F2),y                  ; DE06= B1 F2       1r
-                cmp #$3A                     ; DE08= C9 3A       I:
-                bcs LDE16                    ; DE0A= B0 0A       0.
-                cmp #$30                     ; DE0C= C9 30       I0
-                bcc LDE16                    ; DE0E= 90 06       ..
-                and #$0F                     ; DE10= 29 0F       ).
-                rts                          ; DE12= 60          `
 
-LDE13:
-                jsr LDDCE                    ; DE13= 20 CE DD     N]
-LDE16:
-                clc                          ; DE16= 18          .
-                rts                          ; DE17= 60          `
-
-LDE18:
-                jsr LDE06                    ; DE18= 20 06 DE     .^
-                bcs LDE2B                    ; DE1B= B0 0E       0.
-                and #$DF                     ; DE1D= 29 DF       )_
-                cmp #$47                     ; DE1F= C9 47       IG
-                bcs LDE13                    ; DE21= B0 F0       0p
-                cmp #$41                     ; DE23= C9 41       IA
-                bcc LDE13                    ; DE25= 90 EC       .l
-                php                          ; DE27= 08          .
-                sbc #$37                     ; DE28= E9 37       i7
-                plp                          ; DE2A= 28          (
-LDE2B:
-                iny                          ; DE2B= C8          H
-                rts                          ; DE2C= 60          `
+                .if version==100
+                .include "LDE05.s65"
+                .include "LDE13.s65"
+                .include "LDE18.s65"
+                .endif
 
 LDE2D:
                 pha                          ; DE2D= 48          H
@@ -5686,7 +5679,11 @@ LE030:
                 jsr LE01B                    ; E032= 20 1B E0     .`
                 bcc LE07E                    ; E035= 90 47       .G
                 clv                          ; E037= B8          8
+                .if version==300
+                jsr LE762_300
+                .else
                 lda ($F2),y                  ; E038= B1 F2       1r
+                .endif
                 cmp #$2B                     ; E03A= C9 2B       I+
                 bne LE042                    ; E03C= D0 04       P.
                 bit LD8BC                    ; E03E= 2C BC D8    ,<X
@@ -5958,6 +5955,13 @@ LE1BE:
                 sta $FB                      ; E1C6= 85 FB       .{
                 rts                          ; E1C8= 60          `
 
+                .if version==300
+                .include "LDE18.s65"
+                .include "LDE13.s65"
+                .include "LDE05.s65"
+                .include "LE251.s65"
+                .endif
+                
 LE1C9:
                 bit LD8BC                    ; E1C9= 2C BC D8    ,<X
                 bvs LE1CF                    ; E1CC= 70 01       p.
@@ -6058,18 +6062,9 @@ LE24E:
                 sec                          ; E24F= 38          8
                 rts                          ; E250= 60          `
 
-LE251:
-                pha                          ; E251= 48          H
-                and #$DF                     ; E252= 29 DF       )_
-                cmp #$41                     ; E254= C9 41       IA
-                bcc LE25C                    ; E256= 90 04       ..
-                cmp #$5B                     ; E258= C9 5B       I[
-                bcc LE25D                    ; E25A= 90 01       ..
-LE25C:
-                sec                          ; E25C= 38          8
-LE25D:
-                pla                          ; E25D= 68          h
-                rts                          ; E25E= 60          `
+                .if version==100
+                .include "LE251.s65"
+                .endif
 
 LE25F:
                 ldx #$00                     ; E25F= A2 00       ".
@@ -6951,6 +6946,49 @@ LE763:
                 rol a                        ; E765= 2A          *
                 rts                          ; E766= 60          `
 
+                .if version==300
+                .include "oscli.s65"
+
+LE756_300:
+                sta ($da),y
+                rts
+
+LE759_300:
+                lda ($dc),y
+                rts
+
+LE75C_300:
+                lda ($f0),y
+                rts
+
+LE75F_300:
+                sta ($f0),y
+                rts
+
+LE762_300:
+                lda ($f2),y
+                rts
+
+LE765_300:
+                lda ($fd),y
+                rts
+
+LE768_300:
+                ldx #$04
+                stx $01
+                lda #$00
+                sta $00
+                tay
+LE771_300:
+                sta ($00),y
+                iny
+                bne LE771_300
+                iny
+                inc $01
+                bpl LE771_300
+                rts
+                .endif
+
 LE767:
                 cli                          ; E767= 58          X
                 sei                          ; E768= 78          x
@@ -7046,8 +7084,12 @@ LE7E5:
                 ora #$80                     ; E7EB= 09 80       ..
                 sta LFE07                    ; E7ED= 8D 07 FE    ..~
                 and #$7F                     ; E7F0= 29 7F       ).
+                .if version==300
+                jsr LE3C1_300
+                .else
                 sta $0282                    ; E7F2= 8D 82 02    ...
                 sta LFE07                    ; E7F5= 8D 07 FE    ..~
+                .endif
                 pla                          ; E7F8= 68          h
 LE7F9:
                 bit $FF                      ; E7F9= 24 FF       $.
@@ -7247,8 +7289,12 @@ LE92D:
                 ora $0820                    ; E93B= 0D 20 08    . .
                 cmp $0282                    ; E93E= CD 82 02    M..
                 beq LE949                    ; E941= F0 06       p.
+                .if version==300
+                jsr LE3C1_300
+                .else
                 sta $0282                    ; E943= 8D 82 02    ...
                 sta LFE07                    ; E946= 8D 07 FE    ..~
+                .endif
 LE949:
                 plp                          ; E949= 28          (
                 lda $0821                    ; E94A= AD 21 08    -!.
@@ -7512,8 +7558,12 @@ LEAD1:
                 pla                          ; EAD1= 68          h
                 cmp $0282                    ; EAD2= CD 82 02    M..
                 beq LEADD                    ; EAD5= F0 06       p.
+                .if version==300
+                jsr LE3C1_300
+                .else
                 sta $0282                    ; EAD7= 8D 82 02    ...
                 sta LFE07                    ; EADA= 8D 07 FE    ..~
+                .endif
 LEADD:
                 pla                          ; EADD= 68          h
                 rts                          ; EADE= 60          `
@@ -7679,12 +7729,21 @@ LEBDD:
                 ldx $ED                      ; EBDD= A6 ED       &m
                 beq LEBEC                    ; EBDF= F0 0B       p.
                 jsr LEC1E                    ; EBE1= 20 1E EC     .l
+                .if version==300
+                bmi LEBF4_300
+                .else
                 stx $ED                      ; EBE4= 86 ED       .m
                 bmi LEBEC                    ; EBE6= 30 04       0.
+                .endif
                 ldx #$00                     ; EBE8= A2 00       ".
+LEBF4_300:
                 stx $ED                      ; EBEA= 86 ED       .m
 LEBEC:
+                .if version==300
+                txa
+                .else
                 ldx $ED                      ; EBEC= A6 ED       &m
+                .endif
                 bne LEC06                    ; EBEE= D0 16       P.
                 ldy #$EC                     ; EBF0= A0 EC        l
                 jsr LED76                    ; EBF2= 20 76 ED     vm
@@ -7724,6 +7783,50 @@ LEC13:
 ;           A=preserved
 ;           F=set from &00/&80 keypress in Y
 LEC1E:
+                .if version==300
+
+                beq LEC66_300
+                pha
+                lda $f4
+                pha
+                txa
+                and #$3f
+                pha
+                lda #$c
+                jsr LE2CC_300
+                lda L9FFD_300
+                eor #$4C
+                bne LEC42_300
+                jsr L9FFD_300
+                bmi LEC57_300
+LEC42_300:
+                pla
+                pha
+                jsr LED16_300
+                sta $fc
+                lda #8
+                jsr LE2CC_300
+                php
+                jsr LED5A_300
+                plp
+                and $fc
+                beq LEC59_300
+LEC57_300:
+                lda #$80
+LEC59_300:
+                sta $fc
+                pla
+                ora $fc
+                tax
+                pla
+                jsr LE2CC_300
+                pla
+                ldy $fc
+LEC66_300:
+                rts
+
+                .else
+                
                 beq LEC48                    ; X=0, nonexistant key, exit
                 pha                          ; Save A
                 txa                          ; Save keynum b0-b5
@@ -7750,6 +7853,7 @@ LEC3C:
                 ldy $FC                      ; Return keypress &00/&80 in Y
 LEC48:
                 rts
+                .endif
 
 LEC49:
                 bit LD8BC                    ; EC49= 2C BC D8    ,<X
@@ -7919,16 +8023,22 @@ LED18:                                       ;         b0  b1  b2  b3
                 .byte $BF                    ; ED1D= BF          ?  \ &18-&1B  8   I   K   <
                 .byte $BF                    ; ED1E= BF          ?  \ &1C-&1F  7   U   J   M
                 .byte $BF                    ; ED1F= BF          ?  \ &20-&23  6   Y   H   N
+                .if version==300
+                .byte $BF
+                .endif
                 .byte $BE                    ; ED20= BE          >  \ &24-&27  5   T   G   B
                 .byte $BD                    ; ED21= BD          =  \ &28-&2B  4   R   F   V
                 .byte $BB                    ; ED22= BB          ;  \ &2C-&2F  3   E   D   C
                 .byte $B7                    ; ED23= B7          7  \ &30-&33  2   W   S   X
                 .byte $AF                    ; ED24= AF          /  \ &34-&37  1   Q   A   Z
                 .byte $9F                    ; ED25= 9F          .  \ &38-&3B ESC CAP CTL SFT
+                .if version==300
+                .byte $BF
+                .byte $00
+                .endif
 
 ; (keynum DIV 4) low byte
 LED26:
-                ;inc LFBFD,x                  ; ED26= FE FD FB    ~}{
                 .byte $FE
                 .byte $FD
                 .byte $FB
@@ -7944,6 +8054,9 @@ LED2D:
                 .byte $FF                    ; ED31= FF          .
                 .byte $FF                    ; ED32= FF          .
                 .byte $FF                    ; ED33= FF          .
+                .if version==300
+                .byte $00
+                .endif
 
 LED34:
                 cli                          ; ED34= 58          X
@@ -7951,56 +8064,18 @@ LED34:
                 txa                          ; ED36= 8A          .
                 rts                          ; ED37= 60          `
 
-; Read keypress from ROM 8 at address in (&FA,&FB)
-; ------------------------------------------------
-; Instead of doing LDA (&FA),0 the code does it manually
-; Y is corrupted, so there's nothing to stop it doing:
-; LDY #0, LDA (&FA),Y, RTS
+                .if version==300
+LED5A_300:
+                ldy #0
+                lda ($fa),y
+                rts
+                .endif
+
+                .if version==100
+                .include "LED38.s65"
+                .else
 LED38:
-                ldy $FA                      ; Get low byte of key column address
-                iny                          ; If &FF, jump to use other addresses
-                beq LED42
-                dey                          ; Restore address for &BFxx
-                lda $BF00,y                  ; Read keyboard matrix for %xx111111yyyyyyyy
-                rts                          ; Return with A=key state
-
-LED42:
-                lda $FB                      ; Get high byte of address
-                cmp #$BB                     ; If &BB-&BE, jump to do
-                bcs LED5E
-                cmp #$AF                     ; If >&AF, jump to do &9FFF for  %xx01111111111111
-                bcc LED58
-                beq LED52                    ; If &AF, jump to read &AFFF for %xx10111111111111
-                lda $B7FF                    ; Read from &B7FF for            %xx11011111111111
-                rts
-
-LED52:
-                lda $FF                      ; Read Escape flag - padding to make equal timing?
-                lda $AFFF                    ;  and read keypress at &AFFF
-                rts                          ;
-
-LED58:
-                lda $FF                      ; Read Escape flag - padding to make equal timing?
-                lda $9FFF                    ;  and read keypress at &9FFF
-                rts                          ;
-
-LED5E:
-                lda $FB                      ; Get high byte of address again
-                cmp #$BD                     ; If <&BD, jump to do &BBFF for  %xx11101111111111
-                bcc LED6A
-                beq LED70                    ; If &BD, jump to read &BDFF for %xx11110111111111
-                lda $BEFF                    ; Read from &BEFF for            %xx11111011111111
-                rts
-
-LED6A:
-                lda $FF                      ; Read Escape flag - padding to make equal timing?
-                lda $BBFF                    ; ED6C= AD FF BB    -.;
-                rts                          ; ED6F= 60          `
-
-LED70:
-                lda $FF                      ; Read Escape flag - padding to make equal timing?
-                lda $BDFF                    ; ED72= AD FF BD    -.=
-                rts                          ; ED75= 60          `
+                .endif
 
 LED76:
                 clv                          ; ED76= B8          8
@@ -8760,6 +8835,53 @@ LF0C6:
                 jsr LE3A0                    ; F0C7= 20 A0 E3      c
                 txa                          ; F0CA= 8A          .
                 rts                          ; F0CB= 60          `
+
+                .if version==300
+LF0B5_300:
+                lda $7fff
+                pha
+                lda #$80
+                sta $7fff
+                asl a
+                jsr LD02A_300
+                lda $7fff
+                bmi LF0D3_300
+                ldx #$d8
+                ldy #$01
+                sty $d8
+                tay
+                jsr LFBF7_300
+                lda $d8
+LF0D3_300:
+                sta $027f
+                pla
+                sta $7fff
+                rts
+                .endif
+
+                .if version==300
+LF0DB_300:
+                php
+                sei
+                sec
+                ror a
+                sta LFC7F
+                rol a
+                stx $d6
+                sty $d7
+                ldy #0
+                bvs LF0ED_300
+                lda ($d6),y
+LF0ED_300:
+                sta ($d6),y
+                ldy $d7
+                clc
+                ror a
+                sta LFC7F
+                rol a
+                plp
+                rts
+                .endif
 
 ; OSARGS
 ; ======
@@ -10025,8 +10147,12 @@ LF8C9:
                 lda $0282                    ; F8CB= AD 82 02    -..
                 and #$F9                     ; F8CE= 29 F9       )y
                 ora #$04                     ; F8D0= 09 04       ..
+                .if version==300
+                jsr LE3C1_300
+                .else
                 sta $0282                    ; F8D2= 8D 82 02    ...
                 sta LFE07                    ; F8D5= 8D 07 FE    ..~
+                .endif
                 plp                          ; F8D8= 28          (
                 rts                          ; F8D9= 60          `
 
@@ -10053,12 +10179,21 @@ LF8EA:
                 jsr LF8F3                    ; F8EF= 20 F3 F8     sx
                 pla                          ; F8F2= 68          h
 LF8F3:
+                .if version==300
+                and #$f
+                sed
+                clc
+                adc #$90
+                adc #$40
+                cld
+                .else
                 clc                          ; F8F3= 18          .
                 and #$0F                     ; F8F4= 29 0F       ).
                 adc #$30                     ; F8F6= 69 30       i0
                 cmp #$3A                     ; F8F8= C9 3A       I:
                 bcc LF8FE                    ; F8FA= 90 02       ..
                 adc #$06                     ; F8FC= 69 06       i.
+                .endif
 LF8FE:
                 jmp OSWRCH                   ; F8FE= 4C EE FF    Ln.
 
@@ -10350,8 +10485,12 @@ LFA8C:
                 sta $EA                      ; FA9A= 85 EA       .j
                 lda $0282                    ; FA9C= AD 82 02    -..
                 and #$F9                     ; FA9F= 29 F9       )y
+                .if version==300
+                jsr LE3C1_300
+                .else
                 sta $0282                    ; FAA1= 8D 82 02    ...
                 sta LFE07                    ; FAA4= 8D 07 FE    ..~
+                .endif
                 plp                          ; FAA7= 28          (
                 sec                          ; FAA8= 38          8
                 rts                          ; FAA9= 60          `
@@ -10373,23 +10512,54 @@ LFAB0:
                 rts                          ; FABE= 60          `
 
 LFABF:
+                .if version==300
+                ldx #$04
+                lda $025b
+                and #$af
+                ora #$20
+                .else
                 lda $025B                    ; FABF= AD 5B 02    -[.
                 and #$AF                     ; FAC2= 29 AF       )/
                 ora #$20                     ; FAC4= 09 20       .
                 tay                          ; FAC6= A8          (
                 lda #$04                     ; FAC7= A9 04       ).
                 sta $CA                      ; FAC9= 85 CA       .J
+                .endif
                 bne LFADD                    ; FACB= D0 10       P.
 LFACD:
                 ldx #$00                     ; FACD= A2 00       ".
                 stx LFE06                    ; FACF= 8E 06 FE    ..~
+                .if version==100
                 stx $CA                      ; FAD2= 86 CA       .J
+                .endif
                 lda $025B                    ; FAD4= AD 5B 02    -[.
                 and #$DF                     ; FAD7= 29 DF       )_
                 ora #$50                     ; FAD9= 09 50       .P
+                .if version==100
                 tay                          ; FADB= A8          (
                 txa                          ; FADC= 8A          .
+                .endif
 LFADD:
+                .if version==300
+                tay
+                stx $ca
+                txa
+                ora #$40
+                php
+                sei
+                pha
+                lda $0282
+                and #$f9
+                sta $0282
+                pla
+                ora $0282
+                sta $0282
+                plp
+                sta LFE07
+                sty $025b
+                sty LFE00
+                rts
+                .else
                 ora #$40                     ; FADD= 09 40       .@
                 sta $02F4                    ; FADF= 8D F4 02    .t.
                 php                          ; FAE2= 08          .
@@ -10403,6 +10573,7 @@ LFADD:
                 sty $025B                    ; FAF3= 8C 5B 02    .[.
                 sty LFE00                    ; FAF6= 8C 00 FE    ..~
                 rts                          ; FAF9= 60          `
+                .endif
 
 LFAFA:
                 ldx $03C6                    ; FAFA= AE C6 03    .F.
@@ -10496,12 +10667,132 @@ LFB6B:
                 pla                          ; FB70= 68          h
                 jmp $0406                    ; FB71= 4C 06 04    L..
 
+                .if version==300
+
+                .fill $fbf7-*,0
+LFBF7_300:
+                bit LD8BC
+                bvs LFBFD_300
+                clv
+LFBFD_300:
+                jmp LF0DB_300
+
+                .else
+
                 .fill $fbfe-*,0
 
                 ; This doesn't seem to be used, and doesn't seem to
                 ; refer to anything meaningful.
                 .byte $20                    ; ???
                 .byte $ed                    ; ???
+
+                .endif
+
+                .if version==300
+
+                ; I assume the dump I've got comes from *SAVE on an
+                ; Electron, rather than reading the ROM directly. This
+                ; is whatever data is required to make the I/O area
+                ; match.
+
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $00,$ff,$7f,$ff,$00,$ff,$7f,$ff
+                .byte $00,$ff,$7f,$ff,$00,$ff,$7f,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$00,$00,$06,$00
+                .byte $ff,$ff,$ff,$ff,$00,$00,$06,$00
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $b0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte $a0,$ff,$ff,$ff,$08,$ff,$ff,$ff
+                .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+
+                .else
 
                 .text "(C) 1983 Acorn Computers Ltd."
                 .text "Thanks are due to the following contributors to the development of the Electron (among others too numerous to mention):- "
@@ -10553,6 +10844,8 @@ LFB6B:
                 .text "Adrian Warner,"
                 .text "Robin Williamson,"
                 .text "Roger Wilson."
+
+                .endif
 
 ; Extended vector jump table
 ; ==========================

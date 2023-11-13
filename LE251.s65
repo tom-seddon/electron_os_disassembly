@@ -1,0 +1,12 @@
+LE251:
+                pha                          ; E251= 48          H
+                and #$DF                     ; E252= 29 DF       )_
+                cmp #$41                     ; E254= C9 41       IA
+                bcc LE25C                    ; E256= 90 04       ..
+                cmp #$5B                     ; E258= C9 5B       I[
+                bcc LE25D                    ; E25A= 90 01       ..
+LE25C:
+                sec                          ; E25C= 38          8
+LE25D:
+                pla                          ; E25D= 68          h
+                rts                          ; E25E= 60          `

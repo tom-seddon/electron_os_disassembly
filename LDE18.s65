@@ -1,0 +1,14 @@
+LDE18:
+                jsr LDE06                    ; DE18= 20 06 DE     .^
+                bcs LDE2B                    ; DE1B= B0 0E       0.
+                and #$DF                     ; DE1D= 29 DF       )_
+                cmp #$47                     ; DE1F= C9 47       IG
+                bcs LDE13                    ; DE21= B0 F0       0p
+                cmp #$41                     ; DE23= C9 41       IA
+                bcc LDE13                    ; DE25= 90 EC       .l
+                php                          ; DE27= 08          .
+                sbc #$37                     ; DE28= E9 37       i7
+                plp                          ; DE2A= 28          (
+LDE2B:
+                iny                          ; DE2B= C8          H
+                rts                          ; DE2C= 60          `

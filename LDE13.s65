@@ -1,0 +1,6 @@
+LDE13:
+                jsr LDDCE                    ; DE13= 20 CE DD     N]
+LDE16:
+                clc                          ; DE16= 18          .
+                rts                          ; DE17= 60          `
+

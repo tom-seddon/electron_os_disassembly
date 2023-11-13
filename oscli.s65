@@ -1,0 +1,136 @@
+LDD14:
+                stx $F2                      ; DD14= 86 F2       .r
+                sty $F3                      ; DD16= 84 F3       .s
+                lda #$08                     ; DD18= A9 08       ).
+                jsr LDDBA                    ; DD1A= 20 BA DD     :]
+                ldy #$00                     ; DD1D= A0 00        .
+LDD1F:
+                lda ($F2),y                  ; DD1F= B1 F2       1r
+                cmp #$0D                     ; DD21= C9 0D       I.
+                beq LDD29                    ; DD23= F0 04       p.
+                iny                          ; DD25= C8          H
+                bne LDD1F                    ; DD26= D0 F7       Pw
+                rts                          ; DD28= 60          `
+
+LDD29:
+                ldy #$FF                     ; DD29= A0 FF        .
+LDD2B:
+                jsr LDDC2                    ; DD2B= 20 C2 DD     B]
+                beq LDDA0                    ; DD2E= F0 70       pp
+                cmp #$2A                     ; DD30= C9 2A       I*
+                beq LDD2B                    ; DD32= F0 F7       pw
+                jsr LDDC3                    ; DD34= 20 C3 DD     C]
+                beq LDDA0                    ; DD37= F0 67       pg
+                cmp #$7C                     ; DD39= C9 7C       I|
+                beq LDDA0                    ; DD3B= F0 63       pc
+                cmp #$2F                     ; DD3D= C9 2F       I/
+                bne LDD49                    ; DD3F= D0 08       P.
+                iny                          ; DD41= C8          H
+                jsr LDD92                    ; DD42= 20 92 DD     .]
+                lda #$02                     ; DD45= A9 02       ).
+                bne LDDBA                    ; DD47= D0 71       Pq
+LDD49:
+                sty $E6                      ; DD49= 84 E6       .f
+                ldx #$00                     ; DD4B= A2 00       ".
+                beq LDD62                    ; DD4D= F0 13       p.
+LDD4F:
+                eor LDC9B,x                  ; DD4F= 5D 9B DC    ].\
+                and #$DF                     ; DD52= 29 DF       )_
+                bne LDD6D                    ; DD54= D0 17       P.
+                iny                          ; DD56= C8          H
+                clc                          ; DD57= 18          .
+LDD58:
+                bcs LDD7D                    ; DD58= B0 23       0#
+                inx                          ; DD5A= E8          h
+                lda ($F2),y                  ; DD5B= B1 F2       1r
+                jsr LE251                    ; DD5D= 20 51 E2     Qb
+                bcc LDD4F                    ; DD60= 90 ED       .m
+LDD62:
+                lda LDC9B,x                  ; DD62= BD 9B DC    =.\
+                bmi LDD7F                    ; DD65= 30 18       0.
+                lda ($F2),y                  ; DD67= B1 F2       1r
+                cmp #$2E                     ; DD69= C9 2E       I.
+                beq LDD71                    ; DD6B= F0 04       p.
+LDD6D:
+                clc                          ; DD6D= 18          .
+                ldy $E6                      ; DD6E= A4 E6       $f
+                dey                          ; DD70= 88          .
+LDD71:
+                iny                          ; DD71= C8          H
+                inx                          ; DD72= E8          h
+LDD73:
+                inx                          ; DD73= E8          h
+                lda LDC9B-2,x                  ; DD74= BD 99 DC    =.\
+                beq LDDAA                    ; DD77= F0 31       p1
+                bpl LDD73                    ; DD79= 10 F8       .x
+                bmi LDD58                    ; DD7B= 30 DB       0[
+LDD7D:
+                dex                          ; DD7D= CA          J
+                dex                          ; DD7E= CA          J
+LDD7F:
+                pha                          ; DD7F= 48          H
+                lda LDC9B+1,x                  ; DD80= BD 9C DC    =.\
+                pha                          ; DD83= 48          H
+                jsr LDDC3                    ; DD84= 20 C3 DD     C]
+                clc                          ; DD87= 18          .
+                php                          ; DD88= 08          .
+                jsr LDD8D                    ; DD89= 20 8D DD     .]
+                rti                          ; DD8C= 40          @
+
+LDD8D:
+                lda LDC9B+2,x                  ; DD8D= BD 9D DC    =.\
+                bmi LDDA0                    ; DD90= 30 0E       0.
+LDD92:
+                tya                          ; DD92= 98          .
+                ldy LDC9B+2,x                  ; DD93= BC 9D DC    <.\
+LDD96:
+                clc                          ; DD96= 18          .
+                adc $F2                      ; DD97= 65 F2       er
+                tax                          ; DD99= AA          *
+                tya                          ; DD9A= 98          .
+                ldy $F3                      ; DD9B= A4 F3       $s
+                bcc LDDA0                    ; DD9D= 90 01       ..
+                iny                          ; DD9F= C8          H
+LDDA0:
+                rts                          ; DDA0= 60          `
+
+LDDA1:
+                ldx $024B                    ; DDA1= AE 4B 02    .K.
+                bmi LDDAA                    ; DDA4= 30 04       0.
+                sec                          ; DDA6= 38          8
+                jmp LDAB1                    ; DDA7= 4C B1 DA    L1Z
+
+LDDAA:
+                ldy $E6                      ; DDAA= A4 E6       $f
+                ldx #$04                     ; DDAC= A2 04       ".
+                jsr LF0A8                    ; DDAE= 20 A8 F0     (p
+                beq LDDA0                    ; DDB1= F0 ED       pm
+                lda $E6                      ; DDB3= A5 E6       %f
+                jsr LDD96                    ; DDB5= 20 96 DD     .]
+                lda #$03                     ; DDB8= A9 03       ).
+LDDBA:
+                jmp ($021E)                  ; DDBA= 6C 1E 02    l..
+
+LDDBD:
+                asl a                        ; DDBD= 0A          .
+LDDBE:
+                and #$01                     ; DDBE= 29 01       ).
+                bpl LDDBA                    ; DDC0= 10 F8       .x
+LDDC2:
+                iny                          ; DDC2= C8          H
+LDDC3:
+                lda ($F2),y                  ; DDC3= B1 F2       1r
+                cmp #$20                     ; DDC5= C9 20       I
+                beq LDDC2                    ; DDC7= F0 F9       py
+LDDC9:
+                cmp #$0D                     ; DDC9= C9 0D       I.
+                rts                          ; DDCB= 60          `
+
+LDDCC:
+                bcc LDDC3                    ; DDCC= 90 F5       .u
+LDDCE:
+                jsr LDDC3                    ; DDCE= 20 C3 DD     C]
+                cmp #$2C                     ; DDD1= C9 2C       I,
+                bne LDDC9                    ; DDD3= D0 F4       Pt
+                iny                          ; DDD5= C8          H
+                rts                          ; DDD6= 60          `
