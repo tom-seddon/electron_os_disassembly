@@ -916,6 +916,7 @@ LC6AA:
                 bcs LC71B                    ; C6AA= B0 6F       0o
                 rts                          ; C6AC= 60          `
 
+LC6AD:
                 ldy #$03                     ; C6AD= A0 03        .
 LC6AF:
                 lda ($F0),y                  ; C6AF= B1 F0       1p
@@ -1201,6 +1202,7 @@ LC88D:
                 plp                          ; C89B= 28          (
                 rts                          ; C89C= 60          `
 
+LC89D:
                 tax                          ; C89D= AA          *
                 iny                          ; C89E= C8          H
                 lda ($F0),y                  ; C89F= B1 F0       1p
@@ -1735,6 +1737,7 @@ LCC38:
 LCC3F:
                 rts                          ; CC3F= 60          `
 
+LCC40:
                 jsr LCF4F                    ; CC40= 20 4F CF     OO
                 ldy #$00                     ; CC43= A0 00        .
 LCC45:
@@ -3088,6 +3091,7 @@ LD4D3:
                 sta $0321                    ; D4E0= 8D 21 03    .!.
                 rts                          ; D4E3= 60          `
 
+LD4E4:
                 lda #$03                     ; D4E4= A9 03       ).
                 jsr LD4EB                    ; D4E6= 20 EB D4     kT
                 lda #$07                     ; D4E9= A9 07       ).
@@ -3148,6 +3152,7 @@ LD54C:
                 bmi LD56D                    ; D558= 30 13       0.
                 jmp LCD22                    ; D55A= 4C 22 CD    L"M
 
+LD55D:
                 lda $0318                    ; D55D= AD 18 03    -..
                 sec                          ; D560= 38          8
                 sbc $0308                    ; D561= ED 08 03    m..
@@ -4494,7 +4499,9 @@ LDDAA:
 LDDBA:
                 jmp ($021E)                  ; DDBA= 6C 1E 02    l..
 
+LDDBD:
                 asl a                        ; DDBD= 0A          .
+LDDBE:
                 and #$01                     ; DDBE= 29 01       ).
                 bpl LDDBA                    ; DDC0= 10 F8       .x
 LDDC2:
@@ -5300,6 +5307,7 @@ LE25D:
 
 LE25F:
                 ldx #$00                     ; E25F= A2 00       ".
+LE261:
                 txa                          ; E261= 8A          .
                 and $0245                    ; E262= 2D 45 02    -E.
                 bne LE21D                    ; E265= D0 B6       P6
@@ -5521,138 +5529,97 @@ LE3A9:
 ; OSBYTE/OSWORD dispatch table
 ; ============================
 LE3B1:
-                ;sbc ($E5)                    ; E3B1= F2 E5       re
-                .byte $F2
-                .byte $E5
-                ;bra LE39C                    ; E3B3= 80 E7       .g
-                .byte $80
-                .byte $E7
-
-                ;and ($E5)                    ; E3B5= 32 E5       2e
-                .byte $32
-                .byte $E5
-                .byte $8F                    ; E3B7= 8F          .
-                .byte $E7                    ; E3B8= E7          g
-                .byte $8F                    ; E3B9= 8F          .
-                .byte $E7                    ; E3BA= E7          g
-                .byte $67                    ; E3BB= 67          g
-                .byte $E7                    ; E3BC= E7          g
-                ;bra LE3A6                    ; E3BD= 80 E7       .g
-                .byte $80
-                .byte $E7
-
-                sec                          ; E3BF= 38          8
-                sbc $38                      ; E3C0= E5 38       e8
-                sbc $9C                      ; E3C2= E5 9C       e.
-                cpx $9E                      ; E3C4= E4 9E       d.
-                cpx $8D                      ; E3C6= E4 8D       d.
-                .byte $E7                    ; E3C8= E7          g
-                sty $E7                      ; E3C9= 84 E7       .g
-                .byte $C2                    ; E3CB= C2          B
-                cpx $C3                      ; E3CC= E4 C3       dC
-                cpx $E8                      ; E3CE= E4 E8       dh
-                dec LE538,x                  ; E3D0= DE 38 E5    ^8e
-                sec                          ; E3D3= 38          8
-                sbc $C0                      ; E3D4= E5 C0       e@
-                .byte $E7                    ; E3D6= E7          g
-                ldx $5EE7                    ; E3D7= AE E7 5E    .g^
-                cpy LDEF4                    ; E3DA= CC F4 DE    Lt^
-                ;stz $E4                      ; E3DD= 64 E4       dd    \ &16 - &E464 - Increment ROM polling semaphore
-                .byte $64
-                .byte $E4
-                ;trb $EF                      ; E3DF= 14 EF       .o    \ &17 - &EF14 - Decrement ROM polling semaphore
-                .byte $14
-                .byte $EF
-                sec                          ; E3E1= 38          8     \ &18 - &E538 - Select external sound system
-                sbc $07                      ; E3E2= E5 07       e.    \ &73 - &CC07 - Reset palette
-                cpy LE976                    ; E3E4= CC 76 E9    Lvi   \ &74 - &E976 - Reset sound system
-                pha                          ; E3E7= 48          H     \ &75 - &E648 - Read VDU status byte
-                inc $D1                      ; E3E8= E6 D1       fQ    \ &76 - &E7D1 -
-                .byte $E7                    ; E3EA= E7          g
-                .byte $E3                    ; E3EB= E3          c     \ &77 - &DFE7 -
-                .byte $DF                    ; E3EC= DF          _
-                ;bpl LE3DF                    ; E3ED= 10 F0       .p    \ &78 - &F010 - Write keys pressed
-                .byte $10
-                .byte $F0
-                eor ($EC),y                  ; E3EF= 51 EC       Ql    \ &79 - &EC51 -
-                .byte $4F                    ; E3F1= 4F          O     \ &7A - &EC4F - Keyboard scan from &10
-                cpx LDEE4                    ; E3F2= EC E4 DE    ld^   \ &7B - &DEE4 - Printer going idle
-                .byte $7F                    ; E3F5= 7F          .     \ &7C - &E47F - Set Escape state
-                cpx $80                      ; E3F6= E4 80       d.    \ &7D - &E480 - Clear Escape state
-                cpx $68                      ; E3F8= E4 68       dh    \ &7E - &E468 - Acknowledge Escape state
-                cpx $BE                      ; E3FA= E4 BE       d>    \ &7F - &DDBE - Read EOF
-                cmp LE511,x                  ; E3FC= DD 11 E5    ].e   \ &80 - &E511 - ADVAL
-                ;bne LE3E5                    ; E3FF= D0 E4       Pd    \ &81 - &E4D0 - INKEY
-                .byte $D0
-                .byte $E4
-                .byte $EB                    ; E401= EB          k     \ &82 - &E4EB - Read memory high word
-                cpx $DD                      ; E402= E4 DD       d]    \ &83 - &EFDD - Read bottom of user memory
-                .byte $EF                    ; E404= EF          o
-                ;bit $D8,x                    ; E405= 34 D8       4X    \ &84 - &D834 - Read top of user memory
-                .byte $34
-                .byte $D8
-                .byte $37                    ; E407= 37          7     \ &85 - &D837 - Read top of user memory for specified MODE
-                cld                          ; E408= D8          X
-                eor $11D5,x                  ; E409= 5D D5 11    ]U.
-                .byte $D7                    ; E40C= D7          W
-                .byte $5F                    ; E40D= 5F          _
-                cpx $8A                      ; E40E= E4 8A       d.
-                cpx $1D                      ; E410= E4 1D       d.
-                .byte $E2                    ; E412= E2          b
-                lda $A5DD,x                  ; E413= BD DD A5    =]%
-                .byte $E7                    ; E416= E7          g
-                lda $E7                      ; E417= A5 E7       %g
-                lda ($DA),y                  ; E419= B1 DA       1Z
-                tay                          ; E41B= A8          (
-                ;beq LE3A7                    ; E41C= F0 89       p.
-                .byte $F0
-                .byte $89
-                inx                          ; E41E= E8          h
-                dec $8FE1                    ; E41F= CE E1 8F    Na.
-                inx                          ; E422= E8          h
-                txa                          ; E423= 8A          .
-                inx                          ; E424= E8          h
-                tay                          ; E425= A8          (
-                .byte $FF                    ; E426= FF          .
-                .byte $A3                    ; E427= A3          #
-                .byte $FF                    ; E428= FF          .
-                ;and ($F0)                    ; E429= 32 F0       2p
-                .byte $32
-                .byte $F0
-                sta $E8                      ; E42B= 85 E8       .h
-                cmp #$E1                     ; E42D= C9 E1       Ia
-                adc ($E2,x)                  ; E42F= 61 E2       ab
-                inx                          ; E431= E8          h
-                inc LFFA2                    ; E432= EE A2 FF    n".
-                sec                          ; E435= 38          8
-                sbc $B3                      ; E436= E5 B3       e3
-                .byte $FF                    ; E438= FF          .
-                sec                          ; E439= 38          8
-                sbc $38                      ; E43A= E5 38       e8
-                sbc $B8                      ; E43C= E5 B8       e8
-                .byte $E7                    ; E43E= E7          g
-                sty $E7,x                    ; E43F= 94 E7       .g
-                adc ($E4,x)                  ; E441= 61 E4       ad
-                .byte $F3                    ; E443= F3          s
-                inc $C6                      ; E444= E6 C6       fF
-                inc $D9                      ; E446= E6 D9       fY
-                inc $C2                      ; E448= E6 C2       fB
-                inc $D5                      ; E44A= E6 D5       fU
-                inc $D4                      ; E44C= E6 D4       fT
-                sbc $DC                      ; E44E= E5 DC       e\
-                sbc $FE                      ; E450= E5 FE       e~
-                sbc $7F                      ; E452= E5 7F       e.
-                inc $AD                      ; E454= E6 AD       f-
-                dec $40                      ; E456= C6 40       F@
-                cpy LC6E5                    ; E458= CC E5 C6    LeF
-                ;sta LE4C8,x                  ; E45B= 9D C8 E4    .Hd
-                .byte $9D
-                .byte $C8
-                .byte $E4
-                .byte $D4                    ; E45E= D4          T
-                lda #$00                     ; E45F= A9 00       ).
+                .word LE5F2
+                .word LE780
+                .word LE532
+                .word LE78F
+                .word LE78F
+                .word LE767
+                .word LE780
+                .word LE538
+                .word LE538
+                .word LE49C
+                .word LE49E
+                .word LE78D
+                .word LE784
+                .word LE4C2
+                .word LE4C3
+                .word LDEE8
+                .word LE538
+                .word LE538
+                .word LE7C0
+                .word LE7AE
+                .word LCC5E
+                .word LDEF4
+                .word LE464 ; &16 - Increment ROM polling semaphore
+                .word LEF14 ; &17 - Decrement ROM polling semaphore
+                .word LE538 ; &18 - Select external sound system
+                .word LCC07 ; &73 - Reset palette
+                .word LE976 ; &74 - Reset sound system
+                .word LE648 ; &75 - Read VDU status byte
+                .word LE7D1 ; &76 -
+                .word LDFE3 ; &77 -
+                .word LF010 ; &78 - Write keys pressed
+                .word LEC51 ; &79 -
+                .word LEC4F ; &7A - Keyboard scan from &10
+                .word LDEE4 ; &7B - Printer going idle
+                .word LE47F ; &7C - Set Escape state
+                .word LE480 ; &7D - Clear Escape state
+                .word LE468 ; &7E - Acknowledge Escape state
+                .word LDDBE ; &7F - Read EOF
+                .word LE511 ; &80 - ADVAL
+                .word LE4D0 ; &81 - INKEY
+                .word LE4EB ; &82 - Read memory high word
+                .word LEFDD ; &83 - Read bottom of user memory
+                .word LD834 ; &84 - Read top of user memory
+                .word LD837 ; &85 - Read top of user memory for specified MODE
+                .word LD55D
+                .word LD711
+                .word LE45F
+                .word LE48A
+                .word LE21D
+                .word LDDBD
+                .word LE7A5
+                .word LE7A5
+                .word LDAB1
+                .word LF0A8
+                .word LE889
+                .word LE1CE
+                .word LE88F
+                .word LE88A
+                .word LFFA8
+                .word LFFA3
+                .word LF032
+                .word LE885
+                .word LE1C9
+                .word LE261
+                .word LEEE8
+                .word LFFA2
+                .word LE538
+                .word LFFB3
+                .word LE538
+                .word LE538
+                .word LE7B8
+                .word LE794
+                .word LE461
+                .word LE6F3
+                .word LE6C6
+                .word LE6D9
+                .word LE6C2
+                .word LE6D5
+                .word LE5D4
+                .word LE5DC
+                .word LE5FE
+                .word LE67F
+                .word LC6AD
+                .word LCC40
+                .word LC6E5
+                .word LC89D
+                .word LD4E4
+LE45F:
+                lda #$00
 LE461:
-                jmp ($0200)                  ; E461= 6C 00 02    l..
+                jmp ($0200)
 
 ; OSBYTE xx - Increment ROM polling semaphore
 ; -------------------------------------------
@@ -5703,6 +5670,7 @@ LE495:
 LE49C:
                 iny                          ; E49C= C8          H
                 clc                          ; E49D= 18          .
+LE49E:
                 lda $0252,y                  ; E49E= B9 52 02    9R.
                 pha                          ; E4A1= 48          H
                 txa                          ; E4A2= 8A          .
@@ -5724,7 +5692,9 @@ LE4B6:
                 tay                          ; E4BF= A8          (
 LE4C0:
                 bvc LE4CD                    ; E4C0= 50 0B       P.
+LE4C2:
                 tya                          ; E4C2= 98          .
+LE4C3:
                 cpx #$0A                     ; E4C3= E0 0A       `.
                 bcs LE4CE                    ; E4C5= B0 07       0.
                 ldy $02B5,x                  ; E4C7= BC B5 02    <5.
@@ -5949,7 +5919,7 @@ LE5D4:
                 sta ($F0),y                  ; E5D9= 91 F0       .p
                 rts                          ; E5DB= 60          `
 
-LD5DC:
+LE5DC:
                 jsr LE5E6                    ; E5DC= 20 E6 E5     fe
                 lda ($F0),y                  ; E5DF= B1 F0       1p
                 sta ($FA,x)                  ; E5E1= 81 FA       .z
@@ -6022,6 +5992,7 @@ LE624:
 
 ; OSBYTE &75 - Read VDU status byte
 ; ---------------------------------
+LE648:
                 ldx $D0                      ; E648= A6 D0       &P
 LE64A:
                 rts                          ; E64A= 60          `
@@ -6056,6 +6027,7 @@ LE671:
                 plp                          ; E67D= 28          (
                 rts                          ; E67E= 60          `
 
+LE67F:
                 ldx $0262                    ; E67F= AE 62 02    .b.
                 bne LE64A                    ; E682= D0 C6       PF
                 ldx $026B                    ; E684= AE 6B 02    .k.
@@ -6101,8 +6073,10 @@ LE6BA:
                 iny                          ; E6C0= C8          H
                 rts                          ; E6C1= 60          `
 
+LE6C2:
                 ldx #$0F                     ; E6C2= A2 0F       ".
                 bne LE6C9                    ; E6C4= D0 03       P.
+LE6C6:
                 ldx $0283                    ; E6C6= AE 83 02    ...
 LE6C9:
                 ldy #$04                     ; E6C9= A0 04        .
@@ -6115,8 +6089,10 @@ LE6CB:
 LE6D4:
                 rts                          ; E6D4= 60          `
 
+LE6D5:
                 lda #$0F                     ; E6D5= A9 0F       ).
                 bne LE6DF                    ; E6D7= D0 06       P.
+LE6D9:
                 lda $0283                    ; E6D9= AD 83 02    -..
                 eor #$0F                     ; E6DC= 49 0F       I.
                 clc                          ; E6DE= 18          .
@@ -6135,6 +6111,7 @@ LE6E3:
                 sta $0283                    ; E6EF= 8D 83 02    ...
                 rts                          ; E6F2= 60          `
 
+LE6F3:
                 ldy #$04                     ; E6F3= A0 04        .
 LE6F5:
                 lda ($F0),y                  ; E6F5= B1 F0       1p
@@ -6219,18 +6196,22 @@ LE767:
                 stx $F0                      ; E779= 86 F0       .p
                 jsr LE538                    ; E77B= 20 38 E5     8e
                 lda #$05                     ; E77E= A9 05       ).
+LE780:
                 ora #$F0                     ; E780= 09 F0       .p
                 bne LE792                    ; E782= D0 0E       P.
+LE784:
                 bne LE78D                    ; E784= D0 07       P.
                 ldx #$32                     ; E786= A2 32       "2
                 stx $0254                    ; E788= 8E 54 02    .T.
                 ldx #$08                     ; E78B= A2 08       ".
 LE78D:
                 adc #$CF                     ; E78D= 69 CF       iO
+LE78F:
                 clc                          ; E78F= 18          .
                 adc #$E9                     ; E790= 69 E9       ii
 LE792:
                 stx $F0                      ; E792= 86 F0       .p
+LE794:
                 tay                          ; E794= A8          (
                 lda $0190,y                  ; E795= B9 90 01    9..
                 tax                          ; E798= AA          *
@@ -6249,12 +6230,14 @@ LE7A7:
                 sta $0247                    ; E7A8= 8D 47 02    .G.
                 jmp LF094                    ; E7AB= 4C 94 F0    L.p
 
+LE7AE:
                 lda $0240                    ; E7AE= AD 40 02    -@.
 LE7B1:
                 cli                          ; E7B1= 58          X
                 sei                          ; E7B2= 78          x
                 cmp $0240                    ; E7B3= CD 40 02    M@.
                 beq LE7B1                    ; E7B6= F0 F9       py
+LE7B8:
                 ldy $0301,x                  ; E7B8= BC 01 03    <..
                 lda $0300,x                  ; E7BB= BD 00 03    =..
                 tax                          ; E7BE= AA          *
@@ -6396,15 +6379,18 @@ LE87B:
                 bne LE889                    ; E880= D0 07       P.
                 jmp $0287                    ; E882= 4C 87 02    L..
 
+LE885:
                 tya                          ; E885= 98          .
                 sta LFE00,x                  ; E886= 9D 00 FE    ..~
 LE889:
                 rts                          ; E889= 60          `
 
+LE88A:
                 tya                          ; E88A= 98          .
                 sta LFC00,x                  ; E88B= 9D 00 FC    ..|
                 rts                          ; E88E= 60          `
 
+LE88F:
                 ldy LFC00,x                  ; E88F= BC 00 FC    <.|
                 rts                          ; E892= 60          `
 
@@ -8993,6 +8979,7 @@ LF6E0:
                 jsr LF1A4                    ; F6ED= 20 A4 F1     $q
 LF6F0:
                 jsr LEA97                    ; F6F0= 20 97 EA     .j
+;LF6F3:
                 bcc LF6E0                    ; F6F3= 90 EB       .k
                 clv                          ; F6F5= B8          8
                 rts                          ; F6F6= 60          `
@@ -10018,10 +10005,12 @@ LFF51:
 LFFA2:
                 rts                          ; FFA2= 60          `
 
+LFFA3:
                 tya                          ; FFA3= 98          .
                 sta LFD00,x                  ; FFA4= 9D 00 FD    ..}
                 rts                          ; FFA7= 60          `
 
+LFFA8:
                 ldy LFD00,x                  ; FFA8= BC 00 FD    <.}
                 rts                          ; FFAB= 60          `
 
