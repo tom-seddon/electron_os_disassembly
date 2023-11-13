@@ -1286,27 +1286,15 @@ LC40F:
                 ; bra LC3AF                    ; C410= 80 9D       ..
                 .byte $80
 LC411:
-                .byte $9d
+                .word LD29D
+                .word LD295
 
-LC412:
-                ; cmp ($95)                    ; C412= D2 95       R.
-                .byte $d2
-                .byte $95
-                ; cmp ($81)                    ; C414= D2 81       R.
-                .byte $d2
+routines_C415_C419=[LD281,LD28B,LD259,LD262]
+                
 LC415:
-                .byte $81
-                .byte $8B                    ; C416= 8B          .
-                ;eor LD262,y                  ; C417= 59 62 D2    YbR
-                .byte $59
-                .byte $62
+                .byte <routines_C415_C419
 LC419:
-                .byte $D2
-                ; cmp ($D2)                    ; C41A= D2 D2       RR
-                .byte $d2
-                .byte $d2
-                ; cmp ($04)                    ; C41C= D2 04       R.
-                .byte $d2
+                .byte >routines_C415_C419
 LC41D:
                 .byte $04
                 ora $06                      ; C41E= 05 06       ..
@@ -3331,7 +3319,7 @@ LD135:
                 stx $DC                      ; D135= 86 DC       .\
                 lda LC411,x                  ; D137= BD 11 C4    =.D
                 sta $035D                    ; D13A= 8D 5D 03    .].
-                lda LC412,x                  ; D13D= BD 12 C4    =.D
+                lda LC411+1,x                  ; D13D= BD 12 C4    =.D
                 sta $035E                    ; D140= 8D 5E 03    .^.
                 lda $0329,x                  ; D143= BD 29 03    =).
                 bpl LD14C                    ; D146= 10 04       ..
@@ -3530,6 +3518,7 @@ LD295:
                 bpl LD2A4                    ; D296= 10 0C       ..
                 jsr LD2EA                    ; D298= 20 EA D2     jR
                 bne LD2A4                    ; D29B= D0 07       P.
+LD29D:
                 lsr $D1                      ; D29D= 46 D1       FQ
                 bcc LD2A4                    ; D29F= 90 03       ..
                 jsr LD304                    ; D2A1= 20 04 D3     .S
