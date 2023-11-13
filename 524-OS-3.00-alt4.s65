@@ -1,0 +1,5 @@
+version=300
+subVersion=524
+                
+                .include "src/electron_os.s65"
+                

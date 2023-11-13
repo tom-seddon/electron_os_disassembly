@@ -2495,7 +2495,7 @@ LCB9D:
                 sta $0318                    ; CBB0= 8D 18 03    ...
                 sta $0319                    ; CBB3= 8D 19 03    ...
 
-                .if version==300&&subVersion==213
+                .if version==300&&(subVersion==213||subVersion==524)
 
                 sta $d8
                 ldy $034e
@@ -4760,8 +4760,15 @@ LD993:
 ; Check if this is a duplicate of a higher ROM
                 ldx $F4                      ; D99F= A6 F4       &t
                 .if version==300
+                .if subVersion==524
+                nop
+                nop
+                nop
+                nop
+                .else
                 cpx #$a
                 beq LD9E0
+                .endif
                 .else
                 txa                          ; D9A1= 8A          .
                 tay                          ; D9A2= A8          (
@@ -8428,7 +8435,11 @@ LEED5:
 LEEDD:
                 .byte 13
                 .if version==300
+                .if subVersion==524
+                .text "OS 3.10"
+                .else
                 .text "OS 3.00"
+                .endif
                 .else
                 .text "OS 1.00"
                 .endif
@@ -10676,13 +10687,11 @@ LFBFD_300:
                 ; that the hashes can match.
                 
                 .if subVersion==213
-
                 .binary "../orig/213-OS-3.00-alt1.rom",$3c00,768
-
+                .elif subVersion==524
+                .binary "../orig/524-OS-3.00-alt4.rom",$3c00,768
                 .else
-
                 .binary "../orig/os300.rom",$3c00,768
-
                 .endif
 
                 .else

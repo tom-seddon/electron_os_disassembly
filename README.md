@@ -7,11 +7,15 @@ The following non-Acorn versions are covered:
 
 * OS 3.00 - ROM supplied with Slogger's Master RAM Board
 
-The following unreleased non-Acorn versions are covered:
+The following unreleased non-Acorn versions from
+[Slogger's old stock](https://stardot.org.uk/forums/viewtopic.php?t=11795)
+are also covered:
 
-* 213-OS-3.00-alt1 - ROM from [Slogger's old stock](https://stardot.org.uk/forums/viewtopic.php?t=11795)
+* 213-OS-3.00-alt1
+* 249-OS-3.00-alt2 - identical to OS 3.00
+* 524-OS-3.00-alt4
 
-
+(There is also an alt3 ROM, but it looks invalid.)
 
 **This project is a work in progress.** You'll find many holes, many
 missing comments, and some rather unhelpful label names. The initial

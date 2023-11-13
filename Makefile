@@ -43,6 +43,7 @@ all:
 	$(_V)$(MAKE) _assemble FILE=elk100
 	$(_V)$(MAKE) _assemble FILE=os300
 	$(_V)$(MAKE) _assemble FILE=213-OS-3.00-alt1
+	$(_V)$(MAKE) _assemble FILE=524-OS-3.00-alt4
 
 ##########################################################################
 ##########################################################################
@@ -67,6 +68,10 @@ diff300:
 .PHONY:diff300_213
 diff300_213:
 	$(MAKE) _diff FILE=213-OS-3.00-alt1
+
+.PHONY:diff300_524
+diff300_524:
+	$(MAKE) _diff FILE=524-OS-3.00-alt4
 
 .PHONY:_diff
 _diff:
