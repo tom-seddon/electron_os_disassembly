@@ -42,6 +42,7 @@ all:
 	$(_V)$(SHELLCMD) mkdir "$(BUILD)"
 	$(_V)$(MAKE) _assemble FILE=elk100
 	$(_V)$(MAKE) _assemble FILE=os300
+	$(_V)$(MAKE) _assemble FILE=213-OS-3.00-alt1
 
 ##########################################################################
 ##########################################################################
@@ -56,11 +57,20 @@ _assemble:
 
 .PHONY:diff100
 diff100:
+	$(MAKE) _diff FILE=elk100
 	$(_V)vbindiff "$(BUILD)/elk100.rom" orig/elk100.rom
 
 .PHONY:diff300
 diff300:
-	$(_V)vbindiff "$(BUILD)/os300.rom" orig/os300.rom
+	$(MAKE) _diff FILE=os300
+
+.PHONY:diff300_213
+diff300_213:
+	$(MAKE) _diff FILE=213-OS-3.00-alt1
+
+.PHONY:_diff
+_diff:
+	$(_V)vbindiff "$(BUILD)/$(FILE).rom" "orig/$(FILE).rom"
 
 ##########################################################################
 ##########################################################################

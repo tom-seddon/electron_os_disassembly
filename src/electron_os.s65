@@ -2494,6 +2494,42 @@ LCB9D:
                 sta $0269                    ; CBAD= 8D 69 02    .i.
                 sta $0318                    ; CBB0= 8D 18 03    ...
                 sta $0319                    ; CBB3= 8D 19 03    ...
+
+                .if version==300&&subVersion==213
+
+                sta $d8
+                ldy $034e
+                sty $d9
+                tay
+LCBC9_300_213:
+                sta ($d8),y
+                iny
+                bne LCBC9_300_213
+                inc $d9
+                bpl LCBC9_300_213
+                bmi LCBE4
+
+                ; Presumably debug code?
+LCBD4_300_213:
+                lda ($80),y
+                eor $82
+                sta ($80),y
+                dey
+                bpl LCBD4_300_213
+                rts
+
+                lda ($80),y
+                sta $a00,x
+                ora $a20,x
+                and $a40,x
+                sta ($80),y
+                rts
+
+                lda ($80),y
+                rts
+
+                .else
+                
                 ldx #$06                     ; CBB6= A2 06       ".
                 ldy $034E                    ; CBB8= AC 4E 03    ,N.
 LCBBB:
@@ -2524,6 +2560,9 @@ LCBD6:
                 dex                          ; CBDF= CA          J
                 bpl LCBD6                    ; CBE0= 10 F4       .t
                 bmi LCBC5                    ; CBE2= 30 E1       0a
+
+                .endif
+                
 LCBE4:
                 lda #$DF                     ; CBE4= A9 DF       )_
                 bne LCBEA                    ; CBE6= D0 02       P.
@@ -10631,9 +10670,20 @@ LFBFD_300:
 
                 .if version==300
 
-                ; I assume the dump I've got comes from *SAVE on an
-                ; Electron, rather than reading the ROM directly.
+                ; The official(ish) Slogger dumps don't seem to
+                ; contain anything meaningful in the I/O area, so this
+                ; just includes whatever was in the reference dump, so
+                ; that the hashes can match.
+                
+                .if subVersion==213
+
+                .binary "../orig/213-OS-3.00-alt1.rom",$3c00,768
+
+                .else
+
                 .binary "../orig/os300.rom",$3c00,768
+
+                .endif
 
                 .else
 
