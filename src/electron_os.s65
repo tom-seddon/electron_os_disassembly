@@ -1,16 +1,5 @@
 ; -*- comment-column:45; -*-
 
-LC380=$c380                        ; referred to by disassembled table
-;LEA92=$ea92
-;LD856=$d856                     ; reference to default page 2 contents
-;LE89A=$e89a                     ; ???
-;LEA8E=$ea8e                     ; ???
-LED4E=$ed4e
-LEA64=$ea64                     ; referred to by disassembled table
-;LF00B=$f00b                     ; possibly offset reference to table?
-LFFED=$ffed
-LFFFF=$ffff
-
 LFC00=$fc00
 LFC2C=$fc2c                                  ; ???
 LFCE0=$fce0
