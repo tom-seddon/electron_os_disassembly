@@ -24,6 +24,12 @@ LFE05=$fe05
 LFE06=$fe06
 LFE07=$fe07
 LFE08=$fe08
+
+
+beword: .macro value
+                .byte >\value
+                .byte <\value
+                .endmacro
                 
 *=$c000
 ; CHARACTER SET
@@ -4309,80 +4315,61 @@ LDC97:
 
 LDC9B:
                 .text "."                    ;
-                .byte >LDDBA
-                .byte <LDDBA
+                .beword LDDBA
                 .byte $05
                 .text "FX"                   ; XY=>parameters
-                .byte >LE0B0
-                .byte <LE0B0
+                .beword LE0B0
                 .byte $FF
                 .text "BASIC"                ;
-                .byte >LDDA1
-                .byte <LDDA1
+                .beword LDDA1
                 .byte $00
                 .text "CAT"                  ; XY=>parameters, FSC &05
-                .byte >LDDBA
-                .byte <LDDBA
+                .beword LDDBA
                 .byte $05
                 .text "CODE"                 ; X,Y=parameters, OSBYTE &88
-                .byte >LE0B6
-                .byte <LE0B6
+                .beword LE0B6
                 .byte $88
                 .text "EXEC"                 ;
-                .byte >LF5EA
-                .byte <LF5EA
+                .beword LF5EA
                 .byte $00
                 .text "HELP"                 ; XY=>parameters
-                .byte >LEED5
-                .byte <LEED5
+                .beword LEED5
                 .byte $FF
                 .text "KEY"                  ; XY=>parameters
-                .byte >LE095
-                .byte <LE095
+                .beword LE095
                 .byte $FF
                 .text "LOAD"                 ;
-                .byte >LDFAA
-                .byte <LDFAA
+                .beword LDFAA
                 .byte $00
                 .text "LINE"                 ;
-                .byte >LE461
-                .byte <LE461
+                .beword LE461
                 .byte $01
                 .text "MOTOR"                ; X,Y=parameters, OSBYTE &89
-                .byte >LE0B6
-                .byte <LE0B6
+                .beword LE0B6
                 .byte $89
                 .text "OPT"                  ; X,Y=parameters, OSBYTE &8B
-                .byte >LE0B6
-                .byte <LE0B6
+                .beword LE0B6
                 .byte $8B
                 .text "RUN"                  ; XY=>parameters, FSC &04
-                .byte >LDDBA
-                .byte <LDDBA
+                .beword LDDBA
                 .byte $04
                 .text "ROM"                  ; X,Y=parameters, OSBYTE &8D
-                .byte >LE0B6
-                .byte <LE0B6
+                .beword LE0B6
                 .byte $8D
                 .text "SAVE"                 ;
-                .byte >LDFAC
-                .byte <LDFAC
+                .beword LDFAC
                 .byte $00
                 .text "SPOOL"                ;
-                .byte >LDFEF
-                .byte <LDFEF
+                .beword LDFEF
                 .byte $00
                 .text "TAPE"                 ; X,Y=parameters, OSBYTE &8C
-                .byte >LE0B6
-                .byte <LE0B6
+                .beword LE0B6
                 .byte $8C
                 .text "TV"                   ; X,Y=parameters, OSBYTE &90
-                .byte >LE0B6
-                .byte <LE0B6
+                .beword LE0B6
                 .byte $90
                 .text ""                     ; FSC &03
-                .byte >LDDBA
-                .byte <LDDBA
+                .beword LDDBA
                 .byte $03
                 .byte $00
 
