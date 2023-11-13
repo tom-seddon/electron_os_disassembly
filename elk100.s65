@@ -25,6 +25,8 @@ LFE06=$fe06
 LFE07=$fe07
 LFE08=$fe08
 
+vduRoutinesPage=$c3
+                
 extendedVectorSpace=$d9f
 romInformationTable=$2a0
 beword: .macro value
@@ -1028,50 +1030,59 @@ LC327:
                 brk                          ; C327= 00          .
                 eor $AA,x                    ; C328= 55 AA       U*
                 .byte $FF                    ; C32A= FF          .
-LC32B:
-                .byte $8B                    ; C32B= 8B          .
-                lda $1C,x                    ; C32C= B5 1C       5.
-                .byte $27                    ; C32E= 27          '
-                rol $8B35                    ; C32F= 2E 35 8B    .5.
-                .byte $4B                    ; C332= 4B          K
-                rol $6AE2,x                  ; C333= 3E E2 6A    >bj
-                cmp $5EF6,y                  ; C336= D9 F6 5E    Yv^
-                .byte $13                    ; C339= 13          .
-                bit $A56C                    ; C33A= 2C 6C A5    ,l%
-                cpy $41                      ; C33D= C4 41       DA
-                inc $21,x                    ; C33F= F6 21       v!
-                cpx $38F2                    ; C341= EC F2 38    lr8
-                stx $02                      ; C344= 86 02       ..
-                .byte $8B                    ; C346= 8B          .
-                ; stz $A1,x                    ; C347= 74 A1       t!
-                .byte $74
-                .byte $a1
-                asl $25,x                    ; C349= 16 25       .%
-                .byte $AB                    ; C34B= AB          +
-LC34C:
-                cpy $1F                      ; C34C= C4 1F       D.
-                cmp $C5                      ; C34E= C5 C5       EE
-                cmp $C5                      ; C350= C5 C5       EE
-                cpy $E6                      ; C352= C4 E6       Df
-                cmp $C5                      ; C354= C5 C5       EE
-                dec $C5                      ; C356= C6 C5       FE
-                dec $C7                      ; C358= C6 C7       FG
-                cmp $C5                      ; C35A= C5 C5       EE
-                .byte $C7                    ; C35C= C7          G
-                .byte $4F                    ; C35D= 4F          O
-                lsr LC75B                    ; C35E= 4E 5B C7    N[G
-                cmp $5F                      ; C361= C5 5F       E_
-                .byte $57                    ; C363= 57          W
-                sei                          ; C364= 78          x
-                .byte $6B                    ; C365= 6B          k
-                dex                          ; C366= CA          J
-                cpy $3C                      ; C367= C4 3C       D<
-                ; jmp ($4EC7,x)                ; C369= 7C C7 4E    |GN
-                .byte $7c
-                .byte $c7
-                .byte $4e
 
-                dex                          ; C36C= CA          J
+_:=[]
+_..=[(LC48B,0)] ; VDU 0
+_..=[(LC4B5,1)] ; VDU 1
+_..=[(LC51C,0)] ; VDU 2
+_..=[(LC527,0)] ; VDU 3
+_..=[(LC52E,0)] ; VDU 4
+_..=[(LC535,0)] ; VDU 5
+_..=[(LC48B,0)] ; VDU 6
+_..=[(LE64B,0)] ; VDU 7
+_..=[(LC53E,0)] ; VDU 8
+_..=[(LC5E2,0)] ; VDU 9
+_..=[(LC66A,0)] ; VDU 10
+_..=[(LC5D9,0)] ; VDU 11
+_..=[(LC6F6,0)] ; VDU 12
+_..=[(LC75E,0)] ; VDU 13
+_..=[(LC513,0)] ; VDU 14
+_..=[(LC52C,0)] ; VDU 15
+_..=[(LC76C,0)] ; VDU 16
+_..=[(LC7A5,1)] ; VDU 17
+_..=[(LC7C4,2)] ; VDU 18
+_..=[(LC841,5)] ; VDU 19
+_..=[(LC7F6,0)] ; VDU 20
+_..=[(LC521,0)] ; VDU 21
+_..=[(LC8EC,1)] ; VDU 22
+_..=[(LC8F2,9)] ; VDU 23
+_..=[(LCA38,8)] ; VDU 24
+_..=[(LC986,5)] ; VDU 25
+_..=[(LCA02,0)] ; VDU 26
+_..=[(LC48B,0)] ; VDU 27
+_..=[(LC674,4)] ; VDU 28
+_..=[(LCAA1,4)] ; VDU 29
+_..=[(LC716,0)] ; VDU 30
+_..=[(LC725,2)] ; VDU 31
+_..=[(LCAAB,0)] ; VDU 32
+vdu_routines=_
+
+LC32B:
+                .for i=0,i<len(vdu_routines),i+=1
+                .byte <vdu_routines[i][0]
+                .next
+                
+LC34C:
+                .for i=0,i<len(vdu_routines),i+=1
+                .if vdu_routines[i][1]==0
+                .byte >vdu_routines[i][0]
+                .else
+                .cerror !(vdu_routines[i][0]>=(vduRoutinesPage<<8)&&vdu_routines[i][0]<(vduRoutinesPage<<8)+$7ff)
+                .cerror !(vdu_routines[i][1]>=0&&vdu_routines[i][1]<16)
+                .byte (16-vdu_routines[i][1])|((((>vdu_routines[i][0])-vduRoutinesPage)&$f)<<4)
+                .endif
+                .next
+
 LC36D:
                 brk                          ; C36D= 00          .
 LC36E:
@@ -1355,97 +1366,98 @@ LC464:
 LC467:
                 lda #$20                     ; Offset=32 for <DEL>
 LC469:
-                tay                          ; C469= A8          (
-                lda LC32B,y                  ; C46A= B9 2B C3    9+C
-                sta $035D                    ; C46D= 8D 5D 03    .].
-                lda LC34C,y                  ; C470= B9 4C C3    9LC
-                bmi LC4BF                    ; C473= 30 4A       0J
-                tax                          ; C475= AA          *
-                ora #$F0                     ; C476= 09 F0       .p
-                sta $026A                    ; C478= 8D 6A 02    .j.
-                txa                          ; C47B= 8A          .
-                lsr a                        ; C47C= 4A          J
-                lsr a                        ; C47D= 4A          J
-                lsr a                        ; C47E= 4A          J
-                lsr a                        ; C47F= 4A          J
-                clc                          ; C480= 18          .
-                adc #$C3                     ; C481= 69 C3       iC
-                sta $035E                    ; C483= 8D 5E 03    .^.
-                bit $D0                      ; C486= 24 D0       $P
-                bvs LC4A9                    ; C488= 70 1F       p.
-                clc                          ; C48A= 18          .
+                tay
+                lda LC32B,y                  ; get routine LSB
+                sta $035D                    ; store routine MSB
+                lda LC34C,y                  ; get routine MSB
+                bmi LC4BF        ; branch taken if MSB usable directly
+                tax                          ; 
+                ora #$F0
+                sta $026A        ; initialise initial VDU queue length
+                txa
+                lsr a
+                lsr a
+                lsr a
+                lsr a
+                clc
+                adc #vduRoutinesPage
+                sta $035E
+                bit $D0
+                bvs LC4A9
+                clc
 LC48B:
-                rts                          ; C48B= 60          `
+                rts
 
 LC48C:
-                sta $0224,x                  ; C48C= 9D 24 02    .$.
-                inx                          ; C48F= E8          h
-                stx $026A                    ; C490= 8E 6A 02    .j.
-                bne LC4AC                    ; C493= D0 17       P.
-                bit $D0                      ; C495= 24 D0       $P
-                bmi LC4AE                    ; C497= 30 15       0.
-                bvs LC4A0                    ; C499= 70 05       p.
-                jsr LD25F                    ; C49B= 20 5F D2     _R
-                clc                          ; C49E= 18          .
-                rts                          ; C49F= 60          `
+                sta $0224,x
+                inx
+                stx $026A
+                bne LC4AC
+                bit $D0
+                bmi LC4AE
+                bvs LC4A0
+                jsr LD25F
+                clc
+                rts
 
 LC4A0:
-                jsr LC4E2                    ; C4A0= 20 E2 C4     bD
-                jsr LCCC1                    ; C4A3= 20 C1 CC     AL
-                jsr LD25F                    ; C4A6= 20 5F D2     _R
+                jsr LC4E2
+                jsr LCCC1
+                jsr LD25F
 LC4A9:
-                jsr LC4DF                    ; C4A9= 20 DF C4     _D
+                jsr LC4DF
 LC4AC:
-                clc                          ; C4AC= 18          .
-                rts                          ; C4AD= 60          `
+                clc
+                rts
 
 LC4AE:
-                ldy $035E                    ; C4AE= AC 5E 03    ,^.
-                cpy #$C4                     ; C4B1= C0 C4       @D
-                bne LC4AC                    ; C4B3= D0 F7       Pw
-                tax                          ; C4B5= AA          *
-                lda $D0                      ; C4B6= A5 D0       %P
-                lsr a                        ; C4B8= 4A          J
-                bcc LC48B                    ; C4B9= 90 D0       .P
-                txa                          ; C4BB= 8A          .
-                jmp LDEAE                    ; C4BC= 4C AE DE    L.^
+                ldy $035E
+                cpy #$C4
+                bne LC4AC
+LC4B5:
+                tax
+                lda $D0
+                lsr a
+                bcc LC48B
+                txa
+                jmp LDEAE
 
 LC4BF:
-                sta $035E                    ; C4BF= 8D 5E 03    .^.
-                tya                          ; C4C2= 98          .
-                cmp #$08                     ; C4C3= C9 08       I.
-                bcc LC4CD                    ; C4C5= 90 06       ..
-                eor #$FF                     ; C4C7= 49 FF       I.
-                cmp #$F2                     ; C4C9= C9 F2       Ir
-                eor #$FF                     ; C4CB= 49 FF       I.
+                sta $035E                    ; store routine MSB
+                tya
+                cmp #$08
+                bcc LC4CD
+                eor #$FF
+                cmp #$F2
+                eor #$FF
 LC4CD:
-                bit $D0                      ; C4CD= 24 D0       $P
-                bmi LC4F7                    ; C4CF= 30 26       0&
-                php                          ; C4D1= 08          .
-                jsr LD25F                    ; C4D2= 20 5F D2     _R
-                plp                          ; C4D5= 28          (
-                bcc LC4DB                    ; C4D6= 90 03       ..
+                bit $D0
+                bmi LC4F7
+                php
+                jsr LD25F
+                plp
+                bcc LC4DB
 LC4D8:
-                lda $D0                      ; C4D8= A5 D0       %P
-                lsr a                        ; C4DA= 4A          J
+                lda $D0
+                lsr a
 LC4DB:
-                bit $D0                      ; C4DB= 24 D0       $P
-                bvc LC48B                    ; C4DD= 50 AC       P,
+                bit $D0
+                bvc LC48B
 LC4DF:
-                jsr LCCC1                    ; C4DF= 20 C1 CC     AL
+                jsr LCCC1
 LC4E2:
-                php                          ; C4E2= 08          .
-                pha                          ; C4E3= 48          H
-                ldx #$18                     ; C4E4= A2 18       ".
-                ldy #$64                     ; C4E6= A0 64        d
-                jsr LCD1A                    ; C4E8= 20 1A CD     .M
-                jsr LCE42                    ; C4EB= 20 42 CE     BN
-                lda $D0                      ; C4EE= A5 D0       %P
-                eor #$02                     ; C4F0= 49 02       I.
-                sta $D0                      ; C4F2= 85 D0       .P
-                pla                          ; C4F4= 68          h
-                plp                          ; C4F5= 28          (
-                rts                          ; C4F6= 60          `
+                php
+                pha
+                ldx #$18
+                ldy #$64
+                jsr LCD1A
+                jsr LCE42
+                lda $D0
+                eor #$02
+                sta $D0
+                pla
+                plp
+                rts
 
 LC4F7:
                 eor #$06                     ; C4F7= 49 06       I.
@@ -1469,19 +1481,25 @@ LC50A:
                 jsr LDEFB                    ; C50D= 20 FB DE     {^
                 jmp LD6DE                    ; C510= 4C DE D6    L^V
 
+LC513:
                 ldy #$00                     ; C513= A0 00        .
                 sty $0269                    ; C515= 8C 69 02    .i.
                 lda #$04                     ; C518= A9 04       ).
                 bne LC523                    ; C51A= D0 07       P.
+LC51C:
                 jsr LC50A                    ; C51C= 20 0A C5     .E
                 lda #$94                     ; C51F= A9 94       ).
+LC521:
                 eor #$95                     ; C521= 49 95       I.
 LC523:
                 ora $D0                      ; C523= 05 D0       .P
                 bne LC532                    ; C525= D0 0B       P.
+LC527:
                 jsr LC50A                    ; C527= 20 0A C5     .E
                 lda #$0A                     ; C52A= A9 0A       ).
+LC52C:
                 eor #$2F                     ; C52C= 49 2F       I/
+LC52E:
                 eor #$DB                     ; C52E= 49 DB       I[
 LC530:
                 and $D0                      ; C530= 25 D0       %P
@@ -1490,6 +1508,7 @@ LC532:
 LC534:
                 rts                          ; C534= 60          `
 
+LC535:
                 lda $0361                    ; C535= AD 61 03    -a.
                 beq LC534                    ; C538= F0 FA       pz
                 lda #$20                     ; C53A= A9 20       )
@@ -1578,6 +1597,7 @@ LC5C8:
 LC5D6:
                 jmp LD0C9                    ; C5D6= 4C C9 D0    LIP
 
+LC5D9:
                 jsr LC505                    ; C5D9= 20 05 C5     .E
                 beq LC572                    ; C5DC= F0 94       p.
 LC5DE:
@@ -1655,12 +1675,14 @@ LC659:
 LC667:
                 jmp LD0C9                    ; C667= 4C C9 D0    LIP
 
+LC66A:
                 jsr LC505                    ; C66A= 20 05 C5     .E
                 beq LC606                    ; C66D= F0 97       p.
 LC66F:
                 ldx #$02                     ; C66F= A2 02       ".
                 jmp LC59F                    ; C671= 4C 9F C5    L.E
 
+LC674:
                 ldx $0355                    ; C674= AE 55 03    .U.
                 lda $0321                    ; C677= AD 21 03    -!.
                 cmp $0323                    ; C67A= CD 23 03    M#.
@@ -1737,6 +1759,7 @@ LC6ED:
 LC6F5:
                 rts                          ; C6F5= 60          `
 
+LC6F6:
                 jsr LC505                    ; C6F6= 20 05 C5     .E
                 bne LC769                    ; C6F9= D0 6E       Pn
                 lda $D0                      ; C6FB= A5 D0       %P
@@ -1753,6 +1776,7 @@ LC707:
                 cpx $0309                    ; C710= EC 09 03    l..
                 inx                          ; C713= E8          h
                 bcc LC707                    ; C714= 90 F1       .q
+LC716:
                 jsr LC505                    ; C716= 20 05 C5     .E
                 bne LC74D                    ; C719= D0 32       P2
 LC71B:
@@ -1760,6 +1784,7 @@ LC71B:
                 sta $0323                    ; C71D= 8D 23 03    .#.
                 sta $0322                    ; C720= 8D 22 03    .".
                 beq LC72A                    ; C723= F0 05       p.
+LC725:
                 jsr LC505                    ; C725= 20 05 C5     .E
                 bne LC6F5                    ; C728= D0 CB       PK
 LC72A:
@@ -1790,6 +1815,7 @@ LC754:
 LC75B:
                 jmp LD0C9                    ; C75B= 4C C9 D0    LIP
 
+LC75E:
                 jsr LC505                    ; C75E= 20 05 C5     .E
                 bne LC754                    ; C761= D0 F1       Pq
                 jsr LCDAA                    ; C763= 20 AA CD     *M
@@ -1797,6 +1823,7 @@ LC75B:
 
 LC769:
                 jsr LC74D                    ; C769= 20 4D C7     MG
+LC76C:
                 lda $0361                    ; C76C= AD 61 03    -a.
                 beq LC7A4                    ; C76F= F0 33       p3
                 ldx $035A                    ; C771= AE 5A 03    .Z.
@@ -1845,6 +1872,7 @@ LC7BF:
                 pha                          ; C7BF= 48          H
                 jsr LC7A5                    ; C7C0= 20 A5 C7     %G
                 pla                          ; C7C3= 68          h
+LC7C4:
                 ldy #$02                     ; C7C4= A0 02        .
 LC7C6:
                 tax                          ; C7C6= AA          *
@@ -2026,9 +2054,11 @@ LC8C5:
 LC8EB:
                 rts                          ; C8EB= 60          `
 
+LC8EC:
                 lda $0323                    ; C8EC= AD 23 03    -#.
                 jmp LCB30                    ; C8EF= 4C 30 CB    L0K
 
+LC8F2:
                 lda $031B                    ; C8F2= AD 1B 03    -..
                 cmp #$20                     ; C8F5= C9 20       I
                 bcc LC93E                    ; C8F7= 90 45       .E
@@ -2123,6 +2153,7 @@ LC97A:
                 plp                          ; C984= 28          (
                 rts                          ; C985= 60          `
 
+LC986:
                 ldx $0361                    ; C986= AE 61 03    .a.
                 beq LC937                    ; C989= F0 AC       p,
                 jmp LCF71                    ; C98B= 4C 71 CF    LqO
@@ -2271,11 +2302,13 @@ LCA97:
 LCAA0:
                 rts                          ; CAA0= 60          `
 
+LCAA1:
                 ldx #$20                     ; CAA1= A2 20       "
                 ldy #$0C                     ; CAA3= A0 0C        .
                 jsr LD3A1                    ; CAA5= 20 A1 D3     !S
                 jmp LD0C9                    ; CAA8= 4C C9 D0    LIP
 
+LCAAB:
                 jsr LC53E                    ; CAAB= 20 3E C5     >E
                 jsr LC505                    ; CAAE= 20 05 C5     .E
                 bne LCABC                    ; CAB1= D0 09       P.
