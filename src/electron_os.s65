@@ -1,5 +1,7 @@
 ; -*- comment-column:45; -*-
 
+;-------------------------------------------------------------------------
+
                 .virtual $200
 vectors:
 USERV:
@@ -631,12 +633,33 @@ LFC7F=$fc7f
                 
                 .endif
 
+;-------------------------------------------------------------------------
+
 ; Base page in MOS for VDU control code routines. Any control code
 ; handlers must be kept within a 2 KB region starting from this page.
 vduRoutinesBasePage=$c3
                 
 extendedVectorSpace=$d9f
 romInformationTable=$2a0
+
+romLanguageEntry=$8000
+romServiceEntry=$8003
+                .virtual $8006
+romType: .block
+                .fill 1
+canExpandFirmKeys=$10
+hasRelocationAddress=$20
+hasLanguagEentry=64
+hasServiceEntry=128
+                .endblock
+                .endvirtual
+romName=$8008
+
+romLanguageCallDefault=1
+romLanguageCallFirmKeyNext=2
+romLanguageCallFirmKeyInit=3
+                
+;-------------------------------------------------------------------------
 
 ; A few tables use big-endian words, as addresses with the MOS ROM are
 ; known to have the bit 15 set.
@@ -645,6 +668,8 @@ beword: .macro value
                 .byte <\value
                 .endmacro
                 
+
+;-------------------------------------------------------------------------
 *=$c000
                 
 ; CHARACTER SET
@@ -5365,7 +5390,7 @@ LD9CF:
 ; This ROM is not a duplicate
 LD9D3:
                 lda $8006                    ; Store ROM type in ROM table
-                sta $02A0,x
+                sta romInformationTable,x
                 and #$8F                     ; Check if b7=0 and b3-b0=0
                 bne LD9E0                    ; If not 6502 BASIC, skip past
                 stx $024B                    ; Store as BASIC
@@ -5482,7 +5507,7 @@ LDA88:
 LDA92:
                 ldx #$0F                     ; Start at ROM 15 to find a default language
 LDA94:
-                lda $02A0,x                  ; Get ROM type byte
+                lda romInformationTable,x    ; Get ROM type byte
                 rol a                        ; If b6 set, use it
                 bmi LDAB0
                 dex                          ; Loop through all ROMs
@@ -5506,20 +5531,22 @@ LDAB0:
 osbyte8E:
                 php                          ; Save Carry flag
                 stx $028C                    ; Save as Current Language
-                jsr selectROMX                    ; Page in this ROM
-                lda #$80                     ; Prepare to print from &8008
-                ldy #$08
+                jsr selectROMX               ; Page in this ROM
+                lda #>romName    ; Prepare to print from &8008
+                ldy #<romName    ; 
                 jsr LDC36                    ; Display ROM title at &8008
-                sty $FD                      ; Store offset to end of title as last error message
+                sty $FD                      ; Store offset to end of
+                                             ; title as last error
+                                             ; message
                 jsr OSNEWL                   ; Print two newlines
                 jsr OSNEWL
                 lda #$00
-                sta $025D
+                sta firmKeyLength
                 plp                          ; Get RESET/OSBYTE flag back
                 lda #$01                     ; A=&01 for language entry
                 bit $027A                    ; If Tube present, enter Tube code
                 bmi LDAD7
-                jmp $8000                    ; Enter ROM language entry
+                jmp romLanguageEntry ; Enter ROM language entry
 LDAD7:
                 jmp $0400                    ; Enter Tube code to start language
 
@@ -6123,7 +6150,7 @@ LDF28:
                 bcs LDF3B                    ; DF2E= B0 0B       0.
                 lda #$00                     ; DF30= A9 00       ).
                 sta $0268                    ; DF32= 8D 68 02    .h.
-                sta $025D                    ; DF35= 8D 5D 02    .].
+                sta firmKeyLength                    ; DF35= 8D 5D 02    .].
                 sta $026A                    ; DF38= 8D 6A 02    .j.
 LDF3B:
                 jsr LE50B                    ; DF3B= 20 0B E5     .e
@@ -6705,30 +6732,30 @@ LE283:
 LE28C:
                 lda $0272                    ; E28C= AD 72 02    -r.
 LE28F:
-                beq LE2B2                    ; E28F= F0 21       p!
-                lsr a                        ; E291= 4A          J
-                bne LE2C5                    ; E292= D0 31       P1
-                lda $F4                      ; E294= A5 F4       %t
-                pha                          ; E296= 48          H
-                lda $028C                    ; E297= AD 8C 02    -..
-                bmi LE2B5                    ; E29A= 30 19       0.
-                jsr selectROMA                    ; E29C= 20 A0 E3      c
-                lda $8006                    ; E29F= AD 06 80    -..
-                and #$10                     ; E2A2= 29 10       ).
-                beq LE2B5                    ; E2A4= F0 0F       p.
-                lda #$03                     ; E2A6= A9 03       ).
-                jsr $8000                    ; E2A8= 20 00 80     ..
+                beq LE2B2
+                lsr a
+                bne LE2C5
+                lda $F4
+                pha
+                lda $028C
+                bmi LE2B5
+                jsr selectROMA
+                lda romType
+                and #romType.canExpandFirmKeys
+                beq LE2B5         ; taken if rom definitely can't expand firm keys
+                lda #romLanguageCallFirmKeyInit ; EAUG p149
+                jsr romLanguageEntry
 LE2AB:
-                sty $025D                    ; E2AB= 8C 5D 02    .].
-                pla                          ; E2AE= 68          h
-                jsr selectROMA                    ; E2AF= 20 A0 E3      c
+                sty firmKeyLength
+                pla
+                jsr selectROMA
 LE2B2:
-                jmp LE333                    ; E2B2= 4C 33 E3    L3c
+                jmp LE333
 
 LE2B5:
-                lda LEE89,y                  ; E2B5= B9 89 EE    9.n
-                sta $025C                    ; E2B8= 8D 5C 02    .\.
-                lda LEEA9,y                  ; E2BB= B9 A9 EE    9)n
+                lda firmKeyPointers-$90,y                  ; E2B5= B9 89 EE    9.n
+                sta firmKeyPointer                    ; E2B8= 8D 5C 02    .\.
+                lda firmKeyLengths-$90,y                  ; E2BB= B9 A9 EE    9)n
                 tay                          ; E2BE= A8          (
                 bcs LE2AB                    ; E2BF= B0 EA       0j
 LE2C1:
@@ -6814,7 +6841,7 @@ LE333:
                 txa                          ; E333= 8A          .
                 and $0245                    ; E334= 2D 45 02    -E.
                 bne LE2E5                    ; E337= D0 AC       P,
-                lda $025D                    ; E339= AD 5D 02    -].
+                lda firmKeyLength                    ; E339= AD 5D 02    -].
                 bne LE365                    ; E33C= D0 27       P'
                 lda $0268                    ; E33E= AD 68 02    -h.
                 beq LE2E5                    ; E341= F0 A2       p"
@@ -6850,7 +6877,7 @@ LE365:
                 lda #$02                     ; E378= A9 02       ).
                 jsr $8000                    ; E37A= 20 00 80     ..
 LE37D:
-                dec $025D                    ; E37D= CE 5D 02    N].
+                dec firmKeyLength                    ; E37D= CE 5D 02    N].
                 pla                          ; E380= 68          h
                 jsr selectROMA                    ; E381= 20 A0 E3      c
                 tya                          ; E384= 98          .
@@ -6858,10 +6885,10 @@ LE37D:
                 rts                          ; E386= 60          `
 
 LE387:
-                ldy $025C                    ; E387= AC 5C 02    ,\.
-                lda LEF59,y                  ; E38A= B9 59 EF    9Yo
+                ldy firmKeyPointer           ; E387= AC 5C 02    ,\.
+                lda firmKeyExpansions,y                  ; E38A= B9 59 EF    9Yo
                 tay                          ; E38D= A8          (
-                inc $025C                    ; E38E= EE 5C 02    n\.
+                inc firmKeyPointer           ; E38E= EE 5C 02    n\.
                 bne LE37D                    ; E391= D0 EA       Pj
 LE393:
                 lda #$06                     ; E393= A9 06       ).
@@ -8769,206 +8796,257 @@ LEDCD:
 ; &21 -  COPY   &22 -  <-    &23 -  ->
 ; &24 -  DWN    &25 -  UP
 LEDD3:
-                .text "#!",0," "         ; EDD3= 23          #
-                .text """$",13,127   ; EDD6= 20 22 24     "$
-                .text "-%:",0            ; EDD9= 0D 7F 2D    ..-
-                .text "0p;/"                 ; EDDF= 30 70       0p
-                .text "9ol."                 ; EDE3= 39 6F 6C    9ol
-                .text "8ik,"                 ; EDE6= 2E 38 69    .8i
-                .text "7ujm"                 ; EDEA= 2C 37 75    ,7u
-                .text "6yhn"                 ; EDEE= 6D 36 79    m6y
-                .text "5tgb"                 ; EDF2= 6E 35 74    n5t
-                .text "4rfv"                 ; EDF7= 34 72       4r
-                .text "3edc"                 ; EDFB= 33          3
-                .text "2wsx"                 ; EDFF= 32 77       2w
-                .text "1qaz"                 ; EE03= 31 71       1q
-                .byte $1B                    ; EE07= 1B          .
+                .text "#"
+                .text "!"
+                .text 0
+                .text " "
+                .text """"
+                .text "$"
+                .text 13
+                .text 127
+                .text "-"
+                .text "%"
+                .text ":"
+                .text 0
+                .text "0"
+                .text "p"
+                .text ";"
+                .text "/"
+                .text "9"
+                .text "o"
+                .text "l"
+                .text "."
+                .text "8"
+                .text "i"
+                .text "k"
+                .text ","
+                .text "7"
+                .text "u"
+                .text "j"
+                .text "m"
+                .text "6"
+                .text "y"
+                .text "h"
+                .text "n"
+                .text "5"
+                .text "t"
+                .text "g"
+                .text "b"
+                .text "4"
+                .text "r"
+                .text "f"
+                .text "v"
+                .text "3"
+                .text "e"
+                .text "d"
+                .text "c"
+                .text "2"
+                .text "w"
+                .text "s"
+                .text "x"
+                .text "1"
+                .text "q"
+                .text "a"
+                .text "z"
+                .byte 27
 
 LEE08:
-                bvs LEE4A                    ; EE08= 70 40       p@
-                ora ($00,x)                  ; EE0A= 01 00       ..
-                bmi LEE1E                    ; EE0C= 30 10       0.
-                eor ($61,x)                  ; EE0E= 41 61       Aa
-                and ($21),y                  ; EE10= 31 21       1!
-                eor ($42),y                  ; EE12= 51 42       QB
-                ora ($22),y                  ; EE14= 11 22       ."
-                ;and ($52)                    ; EE16= 32 52       2R
+                .byte $70
+                .byte $40
+                .byte $01
+                .byte $00
+                .byte $30
+                .byte $10
+                .byte $41
+                .byte $61
+                .byte $31
+                .byte $21
+                .byte $51
+                .byte $42
+                .byte $11
+                .byte $22
                 .byte $32
                 .byte $52
-                ;ora ($33)                    ; EE18= 12 33       .3
                 .byte $12
                 .byte $33
-                .byte $43                    ; EE1A= 43          C
-                .byte $63                    ; EE1B= 63          c
-                .byte $13                    ; EE1C= 13          .
-                .byte $23                    ; EE1D= 23          #
-LEE1E:
-                .byte $53                    ; EE1E= 53          S
-                ;stz $34                      ; EE1F= 64 34       d4
+                .byte $43
+                .byte $63
+                .byte $13
+                .byte $23
+                .byte $53
                 .byte $64
                 .byte $34
-                .byte $44                    ; EE21= 44          D
-                .byte $54                    ; EE22= 54          T
-                eor $24,x                    ; EE23= 55 24       U$
-                and $45,x                    ; EE25= 35 45       5E
-                adc $15                      ; EE27= 65 15       e.
-                and $46                      ; EE29= 25 46       %F
-                ror $26                      ; EE2B= 66 26       f&
-                rol $56,x                    ; EE2D= 36 56       6V
-                .byte $67                    ; EE2F= 67          g
-                .byte $27                    ; EE30= 27          '
-                .byte $37                    ; EE31= 37          7
-                .byte $57                    ; EE32= 57          W
-                pla                          ; EE33= 68          h
-                .byte $17                    ; EE34= 17          .
-                and LFF48,y                  ; EE35= 39 48 FF    9H.
-                ora $4929,y                  ; EE38= 19 29 49    .)I
-                eor $6979,y                  ; EE3B= 59 79 69    Yyi
-                .byte $FF                    ; EE3E= FF          .
-                .byte $62                    ; EE3F= 62          b
+                .byte $44
+                .byte $54
+                .byte $55
+                .byte $24
+                .byte $35
+                .byte $45
+                .byte $65
+                .byte $15
+                .byte $25
+                .byte $46
+                .byte $66
+                .byte $26
+                .byte $36
+                .byte $56
+                .byte $67
+                .byte $27
+                .byte $37
+                .byte $57
+                .byte $68
+                .byte $17
+                .byte $39
+                .byte $48
+                .byte $FF
+                .byte $19
+                .byte $29
+                .byte $49
+                .byte $59
+                .byte $79
+                .byte $69
+                .byte $FF
+                .byte $62
 
 ; Negative INKEY keypress translation table
 ; -----------------------------------------
 ; Key numbers &xF are filtered out and passed to sideways ROMs
 LEE40:
-                .byte $3B                    ; EE40= 3B          ; \ 00  -1  SHIFT
-                ;dec a                        ; EE41= 3A          : \ 01  -2  CTRL
-                .byte $3A
-                brk                          ; EE42= 00          . \ 02  -3  l1 - doesn't exist
-                brk                          ; EE43= 00          . \ 03  -4  l2 - doesn't exist
-                brk                          ; EE44= 00          . \ 04  -5  l3 - doesn't exist
-                brk                          ; EE45= 00          . \ 05  -6  l4 - doesn't exist
-                brk                          ; EE46= 00          . \ 06  -7  l5 - doesn't exist
-                brk                          ; EE47= 00          . \ 07  -8  l6 - doesn't exist
-                brk                          ; EE48= 00          . \ 08  -9  l7 - doesn't exist
-                brk                          ; EE49= 00          . \ 09 -10  l8 - doesn't exist
+                .byte $3B ;; \ 00  -1  SHIFT
+                .byte $3a ;: \ 01  -2  CTRL
+                .byte $00 ;. \ 02  -3  l1 - doesn't exist
+                .byte $00 ;. \ 03  -4  l2 - doesn't exist
+                .byte $00 ;. \ 04  -5  l3 - doesn't exist
+                .byte $00 ;. \ 05  -6  l4 - doesn't exist
+                .byte $00 ;. \ 06  -7  l5 - doesn't exist
+                .byte $00 ;. \ 07  -8  l6 - doesn't exist
+                .byte $00 ;. \ 08  -9  l7 - doesn't exist
+                .byte $00 ;. \ 09 -10  l8 - doesn't exist
 LEE4A:
-                brk                          ; EE4A= 00          . \ 0A -11
-                brk                          ; EE4B= 00          . \ 0B -12
-                brk                          ; EE4C= 00          . \ 0C -13
-                brk                          ; EE4D= 00          . \ 0D -14
-                brk                          ; EE4E= 00          . \ 0E -15
-                brk                          ; EE4F= 00          . \ 0F -16
-                .byte $35                    ; EE50= 35          5 \ 10 -17  Q
-                .byte $2C                    ; EE51= 2C          , \ 11 -18  3
-                plp                          ; EE52= 28          ( \ 12 -19  4
-                .byte $24                    ; EE53= 24          $ \ 13 -20  5
-                brk                          ; EE54= 00          . \ 14 -21  f4 - doesn't exist
-                clc                          ; EE55= 18          . \ 15 -22  8
-                brk                          ; EE56= 00          . \ 16 -23  f7 - doesn't exist
-                .byte $0C                    ; EE57= 0C          . \ 17 -24  -
-                .byte $08                    ; EE58= 08          . \ 18 -25  ^
-                .byte $08                    ; EE59= 08          . \ 19 -26  <-
-                brk                          ; EE5A= 00          . \ 1A -27
-                brk                          ; EE5B= 00          . \ 1B -28
-                brk                          ; EE5C= 00          . \ 1C -29
-                brk                          ; EE5D= 00          . \ 1D -30
-                brk                          ; EE5E= 00          . \ 1E -31
-                brk                          ; EE5F= 00          . \ 1F -32
-                brk                          ; EE60= 00          . \ 20 -33  f0 - doesn't exist
-                .byte $31                    ; EE61= 31            \ 21 -34  W
-                .byte $2D                    ; EE62= 2D            \ 22 -35  E
-                .byte $25                    ; EE63= 25            \ 23 -36  T
-                .byte $1C                    ; EE64= 1C            \ 24 -37  7
-                .byte $19                    ; EE65= 19            \ 25 -38  I
-                .byte $14                    ; EE66= 14            \ 26 -39  9
-                .byte $10                    ; EE67= 10            \ 27 -40  0
-                .byte $09                    ; EE68= 09            \ 28 -41  _
-                .byte $09                    ; EE69= 09            \ 29 -42  DWN
-                brk                          ; EE6A= 00          . \ 2A -43
-                brk                          ; EE6B= 00          . \ 2B -44
-                brk                          ; EE6C= 00          . \ 2C -45
-                brk                          ; EE6D= 00          . \ 2D -46
-                brk                          ; EE6E= 00          . \ 2E -47
-                brk                          ; EE6F= 00          . \ 2F -48
-                .byte $34                    ; EE70= 34            \ 30 -49  1
-                .byte $30                    ; EE71= 30            \ 31 -50  2
-                .byte $2E                    ; EE72= 2E            \ 32 -51  D
-                .byte $29                    ; EE73= 29            \ 33 -52  R
-                .byte $20                    ; EE74= 20            \ 34 -53  6
-                .byte $1D                    ; EE75= 1D            \ 35 -54  U
-                .byte $15                    ; EE76= 15            \ 36 -55  O
-                .byte $11                    ; EE77= 11            \ 37 -56  P
-                .byte $05                    ; EE78= 05            \ 38 -57  [
-                .byte $0D                    ; EE79= 0D            \ 39 -58  UP
-                brk                          ; EE7A= 00          . \ 3A -59
-                brk                          ; EE7B= 00          . \ 3B -60
-                brk                          ; EE7C= 00          . \ 3C -61
-                brk                          ; EE7D= 00          . \ 3D -62
-                brk                          ; EE7E= 00          . \ 3E -63
-                brk                          ; EE7F= 00          . \ 3F -64
-                .byte $39                    ; EE80= 39            \ 40 -65  CAPS
-                .byte $36                    ; EE81= 36            \ 41 -66  A
-                .byte $33                    ; EE82= 33            \ 42 -67  X
-                rol a                        ; EE83= 2A          * \ 43 -68  F
-                .byte $21                    ; EE84= 21          ! \ 44 -69  Y
-                .byte $1E                    ; EE85= 1E          . \ 45 -70  J
-                ;inc a                        ; EE86= 1A          . \ 46 -71  K
-                .byte $1A
-                .byte $10                    ; EE87= 10          . \ 47 -72  @
-                .byte $0E                    ; EE88= 0E          . \ 48 -73  :
+                .byte $00 ; . \ 0A -11
+                .byte $00 ; . \ 0B -12
+                .byte $00 ; . \ 0C -13
+                .byte $00 ; . \ 0D -14
+                .byte $00 ; . \ 0E -15
+                .byte $00 ; . \ 0F -16
+                .byte $35 ; 5 \ 10 -17  Q
+                .byte $2C ; , \ 11 -18  3
+                .byte $28 ; ( \ 12 -19  4
+                .byte $24 ; $ \ 13 -20  5
+                .byte $00 ; . \ 14 -21  f4 - doesn't exist
+                .byte $18 ; . \ 15 -22  8
+                .byte $00 ; . \ 16 -23  f7 - doesn't exist
+                .byte $0C ; . \ 17 -24  -
+                .byte $08 ; . \ 18 -25  ^
+                .byte $08 ; . \ 19 -26  <-
+                .byte $00 ; . \ 1A -27
+                .byte $00 ; . \ 1B -28
+                .byte $00 ; . \ 1C -29
+                .byte $00 ; . \ 1D -30
+                .byte $00 ; . \ 1E -31
+                .byte $00 ; . \ 1F -32
+                .byte $00 ; . \ 20 -33  f0 - doesn't exist
+                .byte $31 ;   \ 21 -34  W
+                .byte $2D ;   \ 22 -35  E
+                .byte $25 ;   \ 23 -36  T
+                .byte $1C ;   \ 24 -37  7
+                .byte $19 ;   \ 25 -38  I
+                .byte $14 ;   \ 26 -39  9
+                .byte $10 ;   \ 27 -40  0
+                .byte $09 ;   \ 28 -41  _
+                .byte $09 ;   \ 29 -42  DWN
+                .byte $00 ; . \ 2A -43
+                .byte $00 ; . \ 2B -44
+                .byte $00 ; . \ 2C -45
+                .byte $00 ; . \ 2D -46
+                .byte $00 ; . \ 2E -47
+                .byte $00 ; . \ 2F -48
+                .byte $34 ;   \ 30 -49  1
+                .byte $30 ;   \ 31 -50  2
+                .byte $2E ;   \ 32 -51  D
+                .byte $29 ;   \ 33 -52  R
+                .byte $20 ;   \ 34 -53  6
+                .byte $1D ;   \ 35 -54  U
+                .byte $15 ;   \ 36 -55  O
+                .byte $11 ;   \ 37 -56  P
+                .byte $05 ;   \ 38 -57  [
+                .byte $0D ;   \ 39 -58  UP
+                .byte $00 ; . \ 3A -59
+                .byte $00 ; . \ 3B -60
+                .byte $00 ; . \ 3C -61
+                .byte $00 ; . \ 3D -62
+                .byte $00 ; . \ 3E -63
+                .byte $00 ; . \ 3F -64
+                .byte $39 ;   \ 40 -65  CAPS
+                .byte $36 ;   \ 41 -66  A
+                .byte $33 ;   \ 42 -67  X
+                .byte $2a ; * \ 43 -68  F
+                .byte $21 ; ! \ 44 -69  Y
+                .byte $1E ; . \ 45 -70  J
+                .byte $1a ; . \ 46 -71  K
+                .byte $10 ; . \ 47 -72  @
+                .byte $0E ; . \ 48 -73  :
 LEE89:
-                asl a                        ; EE89= 0A          . \ 49 -74  RET
-                brk                          ; EE8A= 00          . \ 4A -75
-                brk                          ; EE8B= 00          . \ 4B -76
-                brk                          ; EE8C= 00          . \ 4C -77
-                brk                          ; EE8D= 00          . \ 4D -78
-                brk                          ; EE8E= 00          . \ 4E -79
-                brk                          ; EE8F= 00          . \ 4F -80
-                brk                          ; EE90= 00          . \ 50 -81  SHLOCK
-                .byte $32                    ; EE91= 32          . \ 51 -82  S
-                .byte $2F                    ; EE92= 2F          . \ 52 -83  C
-                .byte $26                    ; EE93= 26          . \ 53 -84  G
-                .byte $22                    ; EE94= 22          . \ 54 -85  H
-                .byte $23                    ; EE95= 23          # \ 55 -86  N
-                .byte $16                    ; EE96= 16          . \ 56 -87  L
-                .byte $12                    ; EE97= 12          . \ 57 -88  ;
-                .byte $05                    ; EE98= 05          . \ 58 -89  ]
-                .byte $0B                    ; EE99= 0B          . \ 59 -90  DEL
-                brk                          ; EE9A= 00          . \ 5A -91
-                brk                          ; EE9B= 00          . \ 5B -92
-                brk                          ; EE9C= 00          . \ 5C -93
-                brk                          ; EE9D= 00          . \ 5D -94
-                brk                          ; EE9E= 00          . \ 5E -95
-                brk                          ; EE9F= 00          . \ 5F -96
-                brk                          ; EEA0= 00          . \ 60 -97   TAB
-                .byte $37                    ; EEA1= 37          7 \ 61 -98   Z
-                .byte $07                    ; EEA2= 07          . \ 62 -99   SPC
-                .byte $2B                    ; EEA3= 2B          + \ 63 -100  V
-                .byte $27                    ; EEA4= 27          ' \ 64 -101  B
-                .byte $1F                    ; EEA5= 1F          . \ 65 -102  M
-                .byte $1B                    ; EEA6= 1B          . \ 66 -103  <
-                .byte $17                    ; EEA7= 17          . \ 67 -104  >
-                .byte $13                    ; EEA8= 13          . \ 68 -105  ?
-LEEA9:
-                .byte $05                    ; EEA9= 05          . \ 69 -106  COPY
-                brk                          ; EEAA= 00          . \ 6A -107
-                brk                          ; EEAB= 00          . \ 6B -108
-                brk                          ; EEAC= 00          . \ 6C -109
-                brk                          ; EEAD= 00          . \ 6D -110
-                brk                          ; EEAE= 00          . \ 6E -111
-                brk                          ; EEAF= 00          . \ 6F -112
-                sec                          ; EEB0= 38          8 \ 70 -113  Esc
-                brk                          ; EEB1= 00          . \ 71 -114  f1 - doesn't exist
-                brk                          ; EEB2= 00          . \ 72 -115  f2 - doesn't exist
-                brk                          ; EEB3= 00          . \ 73 -116  f3 - doesn't exist
-                brk                          ; EEB4= 00          . \ 74 -117  f5 - doesn't exist
-                brk                          ; EEB5= 00          . \ 75 -118  f6 - doesn't exist
-                brk                          ; EEB6= 00          . \ 76 -119  f8 - doesn't exist
-                brk                          ; EEB7= 00          . \ 77 -120  f9 - doesn't exist
-                .byte $04                    ; EEB8= 04          . \ 78 -121  \
-                .byte $04                    ; EEB9= 04          . \ 79 -122  ->
+                .byte $0a ; . \ 49 -74  RET
+                .byte $00 ; . \ 4A -75
+                .byte $00 ; . \ 4B -76
+                .byte $00 ; . \ 4C -77
+                .byte $00 ; . \ 4D -78
+                .byte $00 ; . \ 4E -79
+                .byte $00 ; . \ 4F -80
+                .byte $00 ; . \ 50 -81  SHLOCK
+                .byte $32 ; . \ 51 -82  S
+                .byte $2F ; . \ 52 -83  C
+                .byte $26 ; . \ 53 -84  G
+                .byte $22 ; . \ 54 -85  H
+                .byte $23 ; # \ 55 -86  N
+                .byte $16 ; . \ 56 -87  L
+                .byte $12 ; . \ 57 -88  ;
+                .byte $05 ; . \ 58 -89  ]
+                .byte $0B ; . \ 59 -90  DEL
+                .byte $00 ; . \ 5A -91
+                .byte $00 ; . \ 5B -92
+                .byte $00 ; . \ 5C -93
+                .byte $00 ; . \ 5D -94
+                .byte $00 ; . \ 5E -95
+                .byte $00 ; . \ 5F -96
+                .byte $00 ; . \ 60 -97   TAB
+                .byte $37 ; 7 \ 61 -98   Z
+                .byte $07 ; . \ 62 -99   SPC
+                .byte $2B ; + \ 63 -100  V
+                .byte $27 ; ' \ 64 -101  B
+                .byte $1F ; . \ 65 -102  M
+                .byte $1B ; . \ 66 -103  <
+                .byte $17 ; . \ 67 -104  >
+                .byte $13 ; . \ 68 -105  ?
+                .byte $05 ; . \ 69 -106  COPY
+                .byte $00 ; . \ 6A -107
+                .byte $00 ; . \ 6B -108
+                .byte $00 ; . \ 6C -109
+                .byte $00 ; . \ 6D -110
+                .byte $00 ; . \ 6E -111
+                .byte $00 ; . \ 6F -112
+                .byte $38 ; 8 \ 70 -113  Esc
+                .byte $00 ; . \ 71 -114  f1 - doesn't exist
+                .byte $00 ; . \ 72 -115  f2 - doesn't exist
+                .byte $00 ; . \ 73 -116  f3 - doesn't exist
+                .byte $00 ; . \ 74 -117  f5 - doesn't exist
+                .byte $00 ; . \ 75 -118  f6 - doesn't exist
+                .byte $00 ; . \ 76 -119  f8 - doesn't exist
+                .byte $00 ; . \ 77 -120  f9 - doesn't exist
+                .byte $04 ; . \ 78 -121  \
+                .byte $04 ; . \ 79 -122  ->
 
 ; Negative INKEY translation table overlaps following, giving results for -123 to -126
 ; ------------------------------------------------------------------------------------
 ; Mixed keys translation table
 ;
 LEEBA:
-                .text "]"                    ; EEBA= 5D          ] \ 7A -123 -> &1D U
-                .text "~"                    ; EEBB= 7E          ~ \ 7B -124 -> &3E selects H to RETURN
-                .byte $5c     ; EEBC= 5C          \ \ 7C -125 -> &1C 7
-                .text "}"                    ; EEBD= 7D          } \ 7D -126 -> &3D selects Y to COPY
-                .text "{"                    ; EEBE= 7B          { \ 7E -127 -> &3B SHIFT
+                .text "]" ; ] \ 7A -123 -> &1D U
+                .text "~" ; ~ \ 7B -124 -> &3E selects H to RETURN
+                .byte $5c ; \ \ 7C -125 -> &1C 7
+                .text "}" ; } \ 7D -126 -> &3D selects Y to COPY
+                .text "{" ; { \ 7E -127 -> &3B SHIFT
 
 LEEBF:
                 jmp ($00FA)                  ; EEBF= 6C FA 00    lz.
@@ -8979,20 +9057,22 @@ LEEC2:
 ; -------------------------------
 ; Converts &2C-&3B to control code
 LEEC5:
-                ;trb $1E1D                    ; EEC5= 1C 1D 1E    ...
                 .byte $1C
                 .byte $1D
                 .byte $1E
-                .byte $1F                    ; EEC8= 1F          .
-                brk                          ; EEC9= 00          .
-                and ($32),y                  ; EECA= 31 32       12
-                .byte $33                    ; EECC= 33          3
-                ;bit $35,x                    ; EECD= 34 35       45
+                .byte $1F
+                .byte $00
+                .byte $31
+                .byte $32
+                .byte $33
                 .byte $34
                 .byte $35
-                rol $37,x                    ; EECF= 36 37       67
-                sec                          ; EED1= 38          8
-                and $3B3A,y                  ; EED2= 39 3A 3B    9:;
+                .byte $36
+                .byte $37
+                .byte $38
+                .byte $39
+                .byte $3A
+                .byte $3B
 
 ; *HELP
 ; =====
@@ -9030,30 +9110,32 @@ osbyte9A:
 ; -------------------------------
 ; Converts &61-&7A to control code
 LEEFA:
-                ora ($02,x)                  ; EEFA= 01 02       ..
+                .byte $01
+                .byte $02
                 .byte $03                    ; EEFC= 03          .
-                ;tsb $05                      ; EEFD= 04 05       ..
                 .byte $04
                 .byte $05
-                asl $07                      ; EEFF= 06 07       ..
-                php                          ; EF01= 08          .
-                ora #$0A                     ; EF02= 09 0A       ..
+                .byte $06
+                .byte $07
+                .byte $08
+                .byte $09
+                .byte $0a
                 .byte $0B                    ; EF04= 0B          .
-                ;tsb $0E0D                    ; EF05= 0C 0D 0E    ...
                 .byte $0C
                 .byte $0D
                 .byte $0E
                 .byte $0F                    ; EF08= 0F          .
-                bpl LEF1C                    ; EF09= 10 11       ..
-                ;ora ($13)                    ; EF0B= 12 13       ..
+                .byte $10
+                .byte $11
                 .byte $12
                 .byte $13
-                ;trb $15                      ; EF0D= 14 15       ..
                 .byte $14
                 .byte $15
-                asl $17,x                    ; EF0F= 16 17       ..
-                clc                          ; EF11= 18          .
-                .word $1A19                  ; EF12= 19 1A       ..
+                .byte $16
+                .byte $17
+                .byte $18
+                .byte $19
+                .byte $1a
 
 ; OSBYTE xx - Decrement ROM polling semaphore
 ; -------------------------------------------
@@ -9064,102 +9146,113 @@ osbyte17:
 ; Ctrl+Keypress translation table
 ; -------------------------------
 ; Converts &7F to control code
-LEF18:
-                .byte $7F                    ; EF18= 7F          .
 
-LEF19:
-                brk                          ; EF19= 00          .
-                ;tsb $0C                      ; EF1A= 04 0C       ..
-                .byte $04
-                .byte $0C
-LEF1C:
-                ;ora ($16)                    ; EF1C= 12 16       ..
-                .byte $12
-                .byte $16
-                ;inc a                        ; EF1E= 1A          .
-                .byte $1A
-                ora $2421,x                  ; EF1F= 1D 21 24    .!$
-                and #$2C                     ; EF22= 29 2C       ),
-                and ($35),y                  ; EF24= 31 35       15
-                and $413D,y                  ; EF26= 39 3D 41    9=A
-                eor $4A                      ; EF29= 45 4A       EJ
-                lsr $5652                    ; EF2B= 4E 52 56    NRV
-                .byte $5B                    ; EF2E= 5B          [
-                lsr $6965,x                  ; EF2F= 5E 65 69    ^ei
-                .byte $6F                    ; EF32= 6F          o
-                ;adc ($72)                    ; EF33= 72 72       rr
-                .byte $72
-                .byte $72
-                ;adc ($76)                    ; EF35= 72 76       rv
-                .byte $72
-                .byte $76
-                ror $7A,x                    ; EF37= 76 7A       vz
-                ;tsb $08                      ; EF39= 04 08       ..
-                .byte $04
-                .byte $08
-                asl $04                      ; EF3B= 06 04       ..
-                ;tsb $03                      ; EF3D= 04 03       ..
-                .byte $04
-                .byte $03
-                ;tsb $03                      ; EF3F= 04 03       ..
-                .byte $04
-                .byte $03
-                ora $03                      ; EF41= 05 03       ..
-                ora $04                      ; EF43= 05 04       ..
-                ;tsb $04                      ; EF45= 04 04       ..
-                .byte $04
-                .byte $04
-                ;tsb $04                      ; EF47= 04 04       ..
-                .byte $04
-                .byte $04
-                ora $04                      ; EF49= 05 04       ..
-                ;tsb $04                      ; EF4B= 04 04       ..
-                .byte $04
-                .byte $04
-                ora $03                      ; EF4D= 05 03       ..
-                .byte $07                    ; EF4F= 07          .
-                ;tsb $06                      ; EF50= 04 06       ..
-                .byte $04
-                .byte $06
-                .byte $03                    ; EF52= 03          .
-                brk                          ; EF53= 00          .
-                brk                          ; EF54= 00          .
-                ;tsb $00                      ; EF55= 04 00       ..
-                .byte $04
+firmKeyExpansion: .macro str
+offset=*-firmKeyExpansions
+_textStart:
+                .text \str
+length=*-_textStart
+                .endmacro
+
+                .byte $7F
+firmKeyPointers:
+                .byte firmKeyExpansions.key90.offset
+                .byte firmKeyExpansions.key91.offset
+                .byte firmKeyExpansions.key92.offset
+                .byte firmKeyExpansions.key93.offset
+                .byte firmKeyExpansions.key94.offset
+                .byte firmKeyExpansions.key95.offset
+                .byte firmKeyExpansions.key96.offset
+                .byte firmKeyExpansions.key97.offset
+                .byte firmKeyExpansions.key98.offset
+                .byte firmKeyExpansions.key99.offset
+                .byte firmKeyExpansions.key9A.offset
+                .byte firmKeyExpansions.key9B.offset
+                .byte firmKeyExpansions.key9C.offset
+                .byte firmKeyExpansions.key9D.offset
+                .byte firmKeyExpansions.key9E.offset
+                .byte firmKeyExpansions.key9F.offset
+                .byte firmKeyExpansions.keyA0.offset
+                .byte firmKeyExpansions.keyA1.offset
+                .byte firmKeyExpansions.keyA2.offset
+                .byte firmKeyExpansions.keyA3.offset
+                .byte firmKeyExpansions.keyA4.offset
+                .byte firmKeyExpansions.keyA5.offset
+                .byte firmKeyExpansions.keyA6.offset
+                .byte firmKeyExpansions.keyA7.offset
+                .byte firmKeyExpansions.keyA8.offset
+                .byte firmKeyExpansions.keyA9.offset
+                .byte firmKeyExpansions.keyAC.offset
+                .byte firmKeyExpansions.keyAC.offset
+                .byte firmKeyExpansions.keyAC.offset
+                .byte firmKeyExpansions.keyAE.offset
+                .byte firmKeyExpansions.keyAE.offset
+                .byte firmKeyExpansions.keyAF.offset
+firmKeyLengths:
+                .byte firmKeyExpansions.key90.length
+                .byte firmKeyExpansions.key91.length
+                .byte firmKeyExpansions.key92.length
+                .byte firmKeyExpansions.key93.length
+                .byte firmKeyExpansions.key94.length
+                .byte firmKeyExpansions.key95.length
+                .byte firmKeyExpansions.key96.length
+                .byte firmKeyExpansions.key97.length
+                .byte firmKeyExpansions.key98.length
+                .byte firmKeyExpansions.key99.length
+                .byte firmKeyExpansions.key9A.length
+                .byte firmKeyExpansions.key9B.length
+                .byte firmKeyExpansions.key9C.length
+                .byte firmKeyExpansions.key9D.length
+                .byte firmKeyExpansions.key9E.length
+                .byte firmKeyExpansions.key9F.length
+                .byte firmKeyExpansions.keyA0.length
+                .byte firmKeyExpansions.keyA1.length
+                .byte firmKeyExpansions.keyA2.length
+                .byte firmKeyExpansions.keyA3.length
+                .byte firmKeyExpansions.keyA4.length
+                .byte firmKeyExpansions.keyA5.length
+                .byte firmKeyExpansions.keyA6.length
+                .byte firmKeyExpansions.keyA7.length
+                .byte firmKeyExpansions.keyA8.length
+                .byte firmKeyExpansions.keyA9.length
                 .byte $00
-                ;tsb $05                      ; EF57= 04 05       ..
-                .byte $04
-                .byte $05
-LEF59:
-                .text "AUTO"
-                .text "RENUMBER"
-                .text "COLOUR"
-                .text "DRAW"
-                .text "ELSE"
-                .text "FOR"
-                .text "GOTO"
-                .text "DEG"
-                .text "INPUT"
-                .text "RAD"
-                .text "CHAIN"
-                .text "LIST"
-                .text "MODE"
-                .text "NEXT"
-                .text "OLD",13
-                .text "PLOT"
-                .text "LOCAL"
-                .text "RUN",13
-                .text "STEP"
-                .text "THEN"
-                .text "UNTIL"
-                .text "VDU"
-                .text "RESTORE"
-                .text "PROC"
-                .text "REPEAT"
-                .text "END"
-                .text "LOAD"
-                .text "SAVE"
-                .text "PRINT"
+                .byte $00
+                .byte firmKeyExpansions.keyAC.length
+                .byte $00
+                .byte firmKeyExpansions.keyAE.length
+                .byte firmKeyExpansions.keyAF.length
+                
+firmKeyExpansions: .block
+key90: .firmKeyExpansion "AUTO"
+key91: .firmKeyExpansion "RENUMBER"
+key92: .firmKeyExpansion "COLOUR"
+key93: .firmKeyExpansion "DRAW"
+key94: .firmKeyExpansion "ELSE"
+key95: .firmKeyExpansion "FOR"
+key96: .firmKeyExpansion "GOTO"
+key97: .firmKeyExpansion "DEG"
+key98: .firmKeyExpansion "INPUT"
+key99: .firmKeyExpansion "RAD"
+key9A: .firmKeyExpansion "CHAIN"
+key9B: .firmKeyExpansion "LIST"
+key9C: .firmKeyExpansion "MODE"
+key9D: .firmKeyExpansion "NEXT"
+key9E: .firmKeyExpansion ("OLD",13)
+key9F: .firmKeyExpansion "PLOT"
+keyA0: .firmKeyExpansion "LOCAL"
+keyA1: .firmKeyExpansion ("RUN",13)
+keyA2: .firmKeyExpansion "STEP"
+keyA3: .firmKeyExpansion "THEN"
+keyA4: .firmKeyExpansion "UNTIL"
+keyA5: .firmKeyExpansion "VDU"
+keyA6: .firmKeyExpansion "RESTORE"
+keyA7: .firmKeyExpansion "PROC"
+keyA8: .firmKeyExpansion "REPEAT"
+keyA9: .firmKeyExpansion "END"
+keyAC: .firmKeyExpansion "LOAD"
+keyAE: .firmKeyExpansion "SAVE"
+keyAF: .firmKeyExpansion "PRINT"
+                .endblock
                 .text "["
                 .text "^"
                 .text "|"
@@ -9177,21 +9270,23 @@ osbyte83:
 ; --------------------------------
 ; Converts &2C-&3A to shifted code
 LEFE3:
-                ;bit $3E3D,x                  ; EFE3= 3C 3D 3E    <=>
-                .byte $3C
-                .byte $3D
-                .byte $3E
-                .byte $3F                    ; EFE6= 3F          ?
-                rti                          ; EFE7= 40          @
-
-LEFE8:
-                and ($22,x)                  ; EFE8= 21 22       !"
-                .byte $23                    ; EFEA= 23          #
-                bit $25                      ; EFEB= 24 25       $%
-                rol $27                      ; EFED= 26 27       &'
-                plp                          ; EFEF= 28          (
-                and #$2A                     ; EFF0= 29 2A       )*
-                .byte $2B                    ; EFF2= 2B          +
+                .text "<"
+                .text "="
+                .text ">"
+                .text "?"
+                .text "@"
+                .text "!"
+                .text """"
+                .text "#"
+                .text "$"
+                .text "%"
+                .text "&"
+                .text 39
+                .text "("
+                .text ")"
+                .text "*"
+                .text "+"
+                
 LEFF3:
                 cmp #$7F                     ; EFF3= C9 7F       I.
                 beq LF008                    ; EFF5= F0 11       p.
@@ -9227,28 +9322,32 @@ LF012:
 ; --------------------------------
 ; Converts &61-&7A to shifted code
 LF018:
-                eor ($42,x)                  ; F018= 41 42       AB
-                .byte $43                    ; F01A= 43          C
-                .byte $44                    ; F01B= 44          D
-                eor $46                      ; F01C= 45 46       EF
-                .byte $47                    ; F01E= 47          G
-                pha                          ; F01F= 48          H
-                eor #$4A                     ; F020= 49 4A       IJ
-                .byte $4B                    ; F022= 4B          K
-                jmp $4E4D                    ; F023= 4C 4D 4E    LMN
-
-                .byte $4F                    ; F026= 4F          O
-                ;bvc LF07A                    ; F027= 50 51       PQ
-                .byte $50
-                .byte $51
-                ;eor ($53)                    ; F029= 52 53       RS
-                .byte $52
-                .byte $53
-                .byte $54                    ; F02B= 54          T
-                eor $56,x                    ; F02C= 55 56       UV
-                .byte $57                    ; F02E= 57          W
-                cli                          ; F02F= 58          X
-                .text "YZ"                   ; F030= 59 5A BC    YZ<
+                .text "A"
+                .text "B"
+                .text "C"
+                .text "D"
+                .text "E"
+                .text "F"
+                .text "G"
+                .text "H"
+                .text "I"
+                .text "J"
+                .text "K"
+                .text "L"
+                .text "M"
+                .text "N"
+                .text "O"
+                .text "P"
+                .text "Q"
+                .text "R"
+                .text "S"
+                .text "T"
+                .text "U"
+                .text "V"
+                .text "W"
+                .text "X"
+                .text "Y"
+                .text "Z"
 
 osbyte96:
                 ldy $FE00,x                  ; F032= BC 00 FE    <.~
@@ -9268,22 +9367,22 @@ LF036:
 ;
 ; Converts &2C-&3B to Function code
 LF037:
-                .byte $AC                    ; F037= AC          ,   \ Func+, ->
-                .byte $AD                    ; F038= AD          -   \ Func+- ->
-                .byte $AE                    ; F039= AE          /   \ Func+/ ->
-                .byte $AF                    ; F03A= AF          .   \ Func+. ->
-                ;bra LEFBE                    ; F03B= 80 81       ..  \ Func+0 -> f0
-                .byte $80
+                .byte $AC ; F037= AC          ,   \ Func+, ->
+                .byte $AD ; F038= AD          -   \ Func+- ->
+                .byte $AE ; F039= AE          /   \ Func+/ ->
+                .byte $AF ; F03A= AF          .   \ Func+. ->
+                .byte $80 ; F03B= 80 81       ..  \ Func+0 -> f0
                 .byte $81
                 .byte $82                    ; F03D= 82          .
                 .byte $83                    ; F03E= 83          .
-                sty $85                      ; F03F= 84 85       ..
-                stx $87                      ; F041= 86 87       ..
-                dey                          ; F043= 88          .
-                ;bit #$AA                     ; F044= 89 AA       .*  \ Func+: ->
-                .byte $89
+                .byte $84
+                .byte $85
+                .byte $86
+                .byte $87
+                .byte $88
+                .byte $89          ; F044= 89 AA       .*  \ Func+: ->
                 .byte $AA
-                .byte $AB                    ; F046= AB          +   \ Func+; ->
+                .byte $AB          ; F046= AB          +   \ Func+; ->
 
 LF047:
                 ldx #$FF                     ; F047= A2 FF       ".
@@ -9317,15 +9416,7 @@ LF062:
 ; Func+Keypress translation table
 ; -------------------------------
 ; Converts &61-&7A to Function code
-LF06C:
-                ; bcc LEFFF                    ; F06C= 90 91       ..
-                ; sta ($93)                    ; F06E= 92 93       ..
-                ; sty $95,x                    ; F070= 94 95       ..
-                ; stx $97,y                    ; F072= 96 97       ..
-                ; tya                          ; F074= 98          .
-                ; sta $9B9A,y                  ; F075= 99 9A 9B    ...
-                ; stz $9E9D                    ; F078= 9C 9D 9E    ...
-                ; .byte $9F                    ; F07B= 9F          .
+
                 .byte $90
                 .byte $91
                 .byte $92
@@ -9396,7 +9487,7 @@ LF0AE:
                 pha
                 jsr selectROMX
                 pla
-                jsr $8003
+                jsr romServiceEntry
                 tax
                 beq LF0C6
                 ldx $F4
