@@ -6593,7 +6593,7 @@ LE1BE:
                 .include "readHexDigitFromString.s65"
                 .include "LDE13.s65"
                 .include "readDigitFromString.s65"
-                .include "LE251.s65"
+                .include "readLetterFromString.s65"
                 .endif
                 
 osbyte98:
@@ -6697,7 +6697,7 @@ LE24E:
                 rts                          ; E250= 60          `
 
                 .if version==100
-                .include "LE251.s65"
+                .include "readLetterFromString.s65"
                 .endif
 
 LE25F:
