@@ -98,22 +98,22 @@ LDDA1:
                 ldx $024B                    ; DDA1= AE 4B 02    .K.
                 bmi LDDAA                    ; DDA4= 30 04       0.
                 sec                          ; DDA6= 38          8
-                jmp LDAB1                    ; DDA7= 4C B1 DA    L1Z
+                jmp osbyte8E                 ; DDA7= 4C B1 DA    L1Z
 
 LDDAA:
                 ldy $E6                      ; DDAA= A4 E6       $f
                 ldx #$04                     ; DDAC= A2 04       ".
-                jsr LF0A8                    ; DDAE= 20 A8 F0     (p
+                jsr osbyte8F                 ; DDAE= 20 A8 F0     (p
                 beq LDDA0                    ; DDB1= F0 ED       pm
                 lda $E6                      ; DDB3= A5 E6       %f
                 jsr LDD96                    ; DDB5= 20 96 DD     .]
                 lda #$03                     ; DDB8= A9 03       ).
 LDDBA:
-                jmp ($021E)                  ; DDBA= 6C 1E 02    l..
+                jmp (FSCV)                  ; DDBA= 6C 1E 02    l..
 
-LDDBD:
+osbyte8B:
                 asl a                        ; DDBD= 0A          .
-LDDBE:
+osbyte7F:
                 and #$01                     ; DDBE= 29 01       ).
                 bpl LDDBA                    ; DDC0= 10 F8       .x
 LDDC2:
