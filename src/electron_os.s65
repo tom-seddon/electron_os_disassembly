@@ -57,13 +57,218 @@ IND2V:
 IND3V:
                 .fill 2
                 .endvirtual
-                
+
+;-------------------------------------------------------------------------
+
+GenericWorkspaceVDUVariables: .struct
+_28:
+                .fill 1
+_29:
+                .fill 1
+_2A:
+                .fill 1
+_2B:
+                .fill 1
+_2C:
+                .fill 1
+_2D:
+                .fill 1
+_2E:
+                .fill 1
+_2F:
+                .fill 1
+_30:
+                .fill 1
+_31:
+                .fill 1
+_32:
+                .fill 1
+_33:
+                .fill 1
+_34:
+                .fill 1
+_35:
+                .fill 1
+_36:
+                .fill 1
+_37:
+                .fill 1
+_38:
+                .fill 1
+_39:
+                .fill 1
+_3A:
+                .fill 1
+_3B:
+                .fill 1
+_3C:
+                .fill 1
+_3D:
+                .fill 1
+_3E:
+                .fill 1
+_3F:
+                .fill 1
+_40:
+                .fill 1
+_41:
+                .fill 1
+_42:
+                .fill 1
+_43:
+                .fill 1
+_44:
+                .fill 1
+_45:
+                .fill 1
+_46:
+                .fill 1
+_47:
+                .fill 1
+_48:
+                .fill 1
+_49:
+                .fill 1
+                .endstruct
+
+;-------------------------------------------------------------------------
+
+VDUVariables: .struct
+graphicsWindow:
+;graphicsWindowLeftBottom:
+; &00 2 Graphics window left column. (p)
+graphicsWindowPixelsLeft: .fill 2
+; &02 2 Graphics window bottom row. (p)
+graphicsWindowPixelsBottom: .fill 2
+;graphicsWindowRightTop:
+; &04 2 Graphics window right column. (p)
+graphicsWindowPixelsRight: .fill 2
+; &06 2 Graphics window top row. (p)
+graphicsWindowPixelsTop: .fill 2
+textWindow:
+; &08 1 Text window left column.
+textWindowLeft: .fill 1
+; &09 1 Text window bottom row.
+textWindowBottom: .fill 1
+; &0A 1 Text window right column.
+textWindowRight: .fill 1
+; &0B 1 Text window top row.
+textWindowTop: .fill 1
+; &0C 2 Graphics origin X coordinate. (e)
+graphicsWindowOriginX: .fill 2
+; &0E 2 Graphics origin Y coordinate. (e)
+graphicsWindowOriginY: .fill 2
+; &10 2 Graphics cursor X coordinate. (e)
+graphicsCursorPositionX: .fill 2
+; &12 2 Graphics cursor Y coordinate. (e)
+graphicsCursorPositionY: .fill 2
+; &14 2 Previous graphics cursor X coordinate. (p)
+oldGraphicsCursorPixels:
+oldGraphicsCursorPixelsX: .fill 2
+; &16 2 Previous graphics cursor Y coordinate. (p)
+oldGraphicsCursorPixelsY: .fill 2
+; &18 1 Text cursor X coordinate (from left of screen) when not cursor editing. When cursor editing, normally the input cursor X coordinate, but the output cursor X coordinate within an “unknown PLOT codes” routine.
+textCursorXPosition: .fill 1
+; &19 1 Text cursor Y coordinate (from top of screen) when not cursor editing. When cursor editing, normally t.lsthe input cursor Y coordinate, but the output cursor Y coordinate within an “unknown PLOT codes” routine.
+textCursorYPosition: .fill 1
+; &1A 1 Y produced by GADDR (see next section) so that (ZMEMG),Y addresses the correct byte.
+graphicsAddressOffset: .fill 1
+; &1B–&23 VDU queue: &23 contains last byte of queue, other bytes immediately precede it.
+queueSize=9
+queueBegin: .fill queueSize
+queueEnd:
+graphicsCursorPixels:
+; &24 2 Graphics cursor X coordinate. (p)
+graphicsCursorPixelsX: .fill 2
+; &26 2 Graphics cursor Y coordinate. (p)
+graphicsCursorPixelsY: .fill 2
+; &28–&49 Workspace. But variable &38 must not be used in a Teletext mode (mode 7 or 135).
+                .union
+workspace: .dstruct GenericWorkspaceVDUVariables
+                .endunion
+; &4A 2 Address at which the 6845 is to display the text cursor.
+textCursorCRTCAddress: .fill 2
+; &4C 2 Number of bytes in a character row of the text window.
+textWindowWidthInBytes: .fill 2
+; &4E 1 Most significant byte of address of first byte of screen memory.
+startScreenAddressHighByte: .fill 1
+; &4F 1 Number of bytes in a character.
+bytesPerCharacter: .fill 1
+; &50 2 Address of byte in top left corner of screen display.
+screenTopLeftAddress: .fill 2
+; &52 2 Number of bytes in a character row of the whole screen.
+bytesPerCharacterRow: .fill 2
+; &54 1 Most significant byte of number of bytes of screen memory.
+screenSizeHighByte: .fill 1
+; &55 1 Current screen mode (in range 0–7, i.e. without regard to ‘shadowing’).
+currentScreenMODE: .fill 1
+; &56 1 Memory mode: 0 for 20K modes, 1 for 16K modes, 2 for 10K modes, 3 for 8K modes, 4 for 1K modes.
+currentScreenMODEGroup: .fill 1
+; &57 1 Foreground text colour mask.
+foregroundTextColour: .fill 1
+; &58 1 Background text colour mask.
+backgroundTextColour: .fill 1
+; &59 1 0 if plotting graphics foreground, 8 if plotting graphics background.
+graphicsPlotState: .fill 1
+; &5A 1 Current graphics plot mode (usually set to one of following two reduced mod 16).
+graphicsPlotMode: .fill 1
+; &5B 1 Current graphics foreground plot mode (as set by VDU 18).
+foregroundGCOLMode: .fill 1
+; &5C 1 Current graphics background plot mode (as set by VDU 18).
+backgroundGCOLMode: .fill 1
+; &5D 2 Address of routine to process current VDU sequence.
+jumpVector: .fill 2
+; &5F 1 Value for 6845 register 10 to revert to on leaving cursor editing.
+lastCursorStartRegisterValue: .fill 1
+; &60 1 (Number of logical colours)−1 (0 if Teletext).
+numberOfLogicalColoursMinusOne: .fill 1
+; &61 1 (Number of pixels/byte)−1 (0 if not graphics).
+pixelsPerByteMinusOne: .fill 1
+; &62 1 Mask for leftmost pixel in a byte.
+colourMaskLeft: .fill 1
+; &63 1 Mask for rightmost pixel in a byte.
+colourMaskRight: .fill 1
+; &64 1 Output cursor X coordinate when cursor editing, but input cursor X coordinate when cursor editing and inside an ‘unknown PLOT codes’ routine.
+editCursorXPosition: .fill 1
+; &65 1 Output cursor Y coordinate when cursor editing, but input cursor Y coordinate when cursor editing and inside an ‘unknown PLOT codes’ routine.
+editCursorYPosition: .fill 1
+; &66 1 Unused on Electron
+unused: .fill 1
+; &67 1 Font zones ROM/RAM flags
+fontFlags: .fill 1
+fontZoneAddressesHigh: .fill 7
+; &6F–&7E Software copy of the current palette.
+currentPalette: .fill 16
+; &7F 1 Reserved.
+reserved: .fill 1
+                .endstruct
+
+                .virtual $300
+vv: .dstruct VDUVariables
+                .endvirtual
+
+;-------------------------------------------------------------------------
+;
+; Electron memory-mapped I/O
+;
+
+; 
+; FRED
+; 
 LFC00=$fc00
-LFC2C=$fc2c                                  ; ???
-LFCE0=$fce0
-LFCE5=$fce5
+LFC2C=$fc2c                                  ; Econet?
+LFCE0=$fce0                                  ; Tube
+LFCE5=$fce5                                  ; Tube
+
+;
+; JIM
+; 
 LFD00=$fd00
-LFDFE=$fdfe
+LFDFE=$fdfe                                  ; 1 MHz bus hook
+
+; 
+; SHEILA
+; 
                 .virtual $fe00
 LFE00: .block                                ; IRQ status
 masterIRQ=1
@@ -115,11 +320,16 @@ sloggerROM12Hook=$9ffd
 LFC7F=$fc7f
                 
                 .endif
-                
-vduRoutinesPage=$c3
+
+; Base page in MOS for VDU control code routines. Any control code
+; handlers must be kept within a 2 KB region starting from this page.
+vduRoutinesBasePage=$c3
                 
 extendedVectorSpace=$d9f
 romInformationTable=$2a0
+
+; A few tables use big-endian words, as addresses with the MOS ROM are
+; known to have the bit 15 set.
 beword: .macro value
                 .byte >\value
                 .byte <\value
@@ -1104,25 +1314,31 @@ LC314:
                 .byte 13
 
 LC317:
-                .byte $00
-                ora ($22),y                  ; C318= 11 22       ."
-                .byte $33                    ; C31A= 33          3
-                .byte $44                    ; C31B= 44          D
-                eor $66,x                    ; C31C= 55 66       Uf
-                .byte $77                    ; C31E= 77          w
-                dey                          ; C31F= 88          .
-                sta $BBAA,y                  ; C320= 99 AA BB    .*;
-                ;cpy LEEDD                    ; C323= CC DD EE    L]n
-                .byte $CC
-                .byte $DD
-                .byte $EE
-                .byte $FF                    ; C326= FF          .
+                .byte %00000000
+                .byte %00010001
+                .byte %00100010
+                .byte %00110011
+                .byte %01000100
+                .byte %01010101
+                .byte %01100110
+                .byte %01110111
+                .byte %10001000
+                .byte %10011001
+                .byte %10101010
+                .byte %10111011
+                .byte %11001100
+                .byte %11011101
+                .byte %11101110
+                .byte %11111111
 
 LC327:
-                brk                          ; C327= 00          .
-                eor $AA,x                    ; C328= 55 AA       U*
-                .byte $FF                    ; C32A= FF          .
+                .byte %00000000
+                .byte %01010101
+                .byte %10101010
+                .byte %11111111
 
+; This could use improvement - it is not particularly readable in the
+; listing file.
 _:=[]
 _..=[(LC48B,0)] ; VDU 0
 _..=[(LC4B5,1)] ; VDU 1
@@ -1169,214 +1385,165 @@ LC34C:
                 .if vdu_routines[i][1]==0
                 .byte >vdu_routines[i][0]
                 .else
-                .cerror !(vdu_routines[i][0]>=(vduRoutinesPage<<8)&&vdu_routines[i][0]<(vduRoutinesPage<<8)+$7ff)
+                .cerror !(vdu_routines[i][0]>=(vduRoutinesBasePage<<8)&&vdu_routines[i][0]<(vduRoutinesBasePage<<8)+$7ff)
                 .cerror !(vdu_routines[i][1]>=0&&vdu_routines[i][1]<16)
-                .byte (16-vdu_routines[i][1])|((((>vdu_routines[i][0])-vduRoutinesPage)&$f)<<4)
+                .byte (16-vdu_routines[i][1])|((((>vdu_routines[i][0])-vduRoutinesBasePage)&$f)<<4)
                 .endif
                 .next
 
 LC36D:
-                brk                          ; C36D= 00          .
-LC36E:
-                brk                          ; C36E= 00          .
-                .byte $02                    ; C36F= 02          .
-                ;bra LC377                    ; C370= 80 05       ..
-                .byte $80
-                .byte $05
+                .beword 0*640
+                .beword 1*640
+                .beword 2*640
+                .beword 3*640
+                .beword 4*640
+                .beword 5*640
+                .beword 6*640
+                .beword 7*640
+                .beword 8*640
+                .beword 9*640
+                .beword 10*640
+                .beword 11*640
+                .beword 12*640
+                .beword 13*640
+                .beword 14*640
+                .beword 15*640
+                .beword 16*640
+                .beword 17*640
+                .beword 18*640
+                .beword 19*640
+                .beword 20*640
+                .beword 21*640
+                .beword 22*640
+                .beword 23*640
+                .beword 24*640
+                .beword 25*640
+                .beword 26*640
+                .beword 27*640
+                .beword 28*640
+                .beword 29*640
+                .beword 30*640
+                .beword 31*640
 
-                brk                          ; C372= 00          .
-                .byte $07                    ; C373= 07          .
-                ; bra LC380                    ; C374= 80 0A       ..
-                .byte $80
-                .byte $0a
-
-                brk                          ; C376= 00          .
-LC377:
-                ; tsb $0F80                    ; C377= 0C 80 0F    ...
-                .byte $0c
-                .byte $80
-                .byte $0f
-                brk                          ; C37A= 00          .
-                ora ($80),y                  ; C37B= 11 80       ..
-                ; trb $00                      ; C37D= 14 00       ..
-                .byte $14
-                .byte $00
-                asl $80,x                    ; C37F= 16 80       ..
-                ora $1B00,y                  ; C381= 19 00 1B    ...
-                ; bra LC3A4                    ; C384= 80 1E       ..
-                .byte $80
-                .byte $1e
-
-                brk                          ; C386= 00          .
-                jsr $2380                    ; C387= 20 80 23     .#
-                brk                          ; C38A= 00          .
-                and $80                      ; C38B= 25 80       %.
-                plp                          ; C38D= 28          (
-                brk                          ; C38E= 00          .
-                rol a                        ; C38F= 2A          *
-                ; bra LC3BF                    ; C390= 80 2D       .-
-                .byte $80
-                .byte $2d
-
-                brk                          ; C392= 00          .
-                .byte $2F                    ; C393= 2F          /
-                ; bra LC3C8                    ; C394= 80 32       .2
-                .byte $80
-                .byte $32
-
-                brk                          ; C396= 00          .
-                ; bit $80,x                    ; C397= 34 80       4.
-                .byte $34
-                .byte $80
-                .byte $37                    ; C399= 37          7
-                brk                          ; C39A= 00          .
-                and $3C80,y                  ; C39B= 39 80 3C    9.<
-                brk                          ; C39E= 00          .
-                rol $4180,x                  ; C39F= 3E 80 41    >.A
-                brk                          ; C3A2= 00          .
-                .byte $43                    ; C3A3= 43          C
-LC3A4:
-                ; bra LC3EC                    ; C3A4= 80 46       .F
-                .byte $80
-                .byte $46
-
-                brk                          ; C3A6= 00          .
-                pha                          ; C3A7= 48          H
-                ; bra LC3F5                    ; C3A8= 80 4B       .K
-                .byte $80
-                .byte $4b
-
-                brk                          ; C3AA= 00          .
-                ; eor $1F80                    ; C3AB= 4D 80 1F    M..
-                .byte $4d
-                .byte $80
 LC3AD:
-                .byte $1f
-                .byte $1F                    ; C3AE= 1F          .
-LC3AF:
-                .byte $1F                    ; C3AF= 1F          .
-                clc                          ; C3B0= 18          .
-                .byte $1F                    ; C3B1= 1F          .
-                .byte $1F                    ; C3B2= 1F          .
-                clc                          ; C3B3= 18          .
+                .byte 31                     ; Mode 0 - 32 rows
+                .byte 31                     ; Mode 1 - 32 rows
+                .byte 31                     ; Mode 2 - 32 rows
+                .byte 24                     ; Mode 3 - 25 rows
+                .byte 31                     ; Mode 4 - 32 rows
+                .byte 31                     ; Mode 5 - 32 rows
+                .byte 24                     ; Mode 6 - 25 rows
 LC3B4:
-                .byte $4F                    ; C3B4= 4F          O
-                .byte $27                    ; C3B5= 27          '
-                .byte $13                    ; C3B6= 13          .
-                .byte $4F                    ; C3B7= 4F          O
-                .byte $27                    ; C3B8= 27          '
-                .byte $13                    ; C3B9= 13          .
-                .byte $27                    ; C3BA= 27          '
+                .byte 79                     ; Mode 0 - 80 columns
+                .byte 39                     ; Mode 1 - 40 columns
+                .byte 19                     ; Mode 2 - 20 columns
+                .byte 79                     ; Mode 3 - 80 columns
+                .byte 39                     ; Mode 4 - 40 columns
+                .byte 19                     ; Mode 5 - 20 columns
+                .byte 39                     ; Mode 6 - 40 columns
 LC3BB:
-                php                          ; C3BB= 08          .
-                bpl LC3DE                    ; C3BC= 10 20       .
-                php                          ; C3BE= 08          .
-LC3BF:
-                php                          ; C3BF= 08          .
-                ;bpl LC3CA                    ; C3C0= 10 08       ..
-                .byte $10
-LC3C1:
-                .byte $08
-                tax                          ; C3C2= AA          *
-                eor $88,x                    ; C3C3= 55 88       U.
-                .byte $44                    ; C3C5= 44          D
-                .byte $22                    ; C3C6= 22          "
-                ;ora ($80),y                  ; C3C7= 11 80       ..
-                .byte $11
+                .byte 8                      ; Mode 0 - 8 bytes/char
+                .byte 16                     ; Mode 1 - 16 bytes/char
+                .byte 32                     ; Mode 2 - 32 bytes/char
+                .byte 8                      ; Mode 3 - 8 bytes/char
+                .byte 8                      ; Mode 4 - 8 bytes/char
+                .byte 16                     ; Mode 5 - 16 bytes/char
+                .byte 8                      ; Mode 6 - 8 bytes/char
+LC3C2:
+                .byte %10101010
+                .byte %01010101
+                .byte %10001000
+                .byte %01000100
+                .byte %00100010
+                .byte %00010001
 LC3C8:
-                .byte $80
-                rti                          ; C3C9= 40          @
-
-LC3CA:
-                jsr $0810                    ; C3CA= 20 10 08     ..
+                .byte %10000000
+                .byte %01000000
+                .byte %00100000
+                .byte %00010000
+                .byte %00001000
 LC3CD:
-                ; tsb $02                      ; C3CD= 04 02       ..
-                .byte $04
-                .byte $02
+                .byte %00000100
+                .byte %00000010
 LC3CF:
-                ora ($03,x)                  ; C3CF= 01 03       ..
-                .byte $0F                    ; C3D1= 0F          .
-                ora ($01,x)                  ; C3D2= 01 01       ..
-                .byte $03                    ; C3D4= 03          .
-                ;ora ($00,x)                  ; C3D5= 01 00       ..
-                .byte $01
+                .byte %00000001
+                .byte 3
+                .byte 15
+                .byte 1
+                .byte 1
+                .byte 3
+                .byte 1
 LC3D6:
                 .byte $00
 LC3D7:
-                .byte $FF                    ; C3D7= FF          .
+                .byte $FF
 LC3D8:
-                brk                          ; C3D8= 00          .
-                brk                          ; C3D9= 00          .
-                .byte $FF                    ; C3DA= FF          .
+                .byte $00
+                .byte $00
+                .byte $FF
 LC3DB:
-                .byte $FF                    ; C3DB= FF          .
-                .byte $FF                    ; C3DC= FF          .
-                .byte $FF                    ; C3DD= FF          .
+                .byte $FF
+                .byte $FF
+                .byte $FF
 LC3DE:
-                brk                          ; C3DE= 00          .
-                brk                          ; C3DF= 00          .
-                .byte $FF                    ; C3E0= FF          .
-                brk                          ; C3E1= 00          .
-                .byte $0F                    ; C3E2= 0F          .
-                ; beq LC3E4                    ; C3E3= F0 FF       p.
+                .byte $00
+                .byte $00
+                .byte $FF
+                .byte $00
+                .byte $0F
                 .byte $f0
                 .byte $ff
-                brk                          ; C3E5= 00          .
-                .byte $03                    ; C3E6= 03          .
-                ; tsb $300F                    ; C3E7= 0C 0F 30    ..0
+                .byte $00
+                .byte $03
                 .byte $0c
                 .byte $0f
                 .byte $30
-                .byte $33                    ; C3EA= 33          3
-                ; bit LC03F,x                  ; C3EB= 3C 3F C0    <?@
+                .byte $33
                 .byte $3c
                 .byte $3f
                 .byte $c0
-                .byte $C3                    ; C3EE= C3          C
-                ; cpy LF0CF                    ; C3EF= CC CF F0    LOp
+                .byte $C3
                 .byte $cc
                 .byte $cf
                 .byte $f0
-                .byte $F3                    ; C3F2= F3          s
-                .byte $FC                    ; C3F3= FC          |
-                .byte $FF                    ; C3F4= FF          .
+                .byte $F3
+                .byte $FC
+                .byte $FF
 LC3F5:
-                .byte $07                    ; C3F5= 07          .
-                .byte $03                    ; C3F6= 03          .
-                ora ($00,x)                  ; C3F7= 01 00       ..
-                .byte $07                    ; C3F9= 07          .
-                .byte $03                    ; C3FA= 03          .
+                .byte 7
+                .byte 3
+                .byte 1
+                .byte 0
+                .byte 7
+                .byte 3
 LC3FB:
-                brk                          ; C3FB= 00          .
-                brk                          ; C3FC= 00          .
-                brk                          ; C3FD= 00          .
-                ora ($02,x)                  ; C3FE= 01 02       ..
-                .byte $02                    ; C400= 02          .
-                .byte $03                    ; C401= 03          .
-                .byte $03                    ; C402= 03          .
+                .byte $00
+                .byte $00
+                .byte $00
+                .byte $01
+                .byte $02
+                .byte $02
+                .byte $03
+                .byte $03
 LC403:
-                ; tsb $00                      ; C403= 04 00       ..
                 .byte $04
                 .byte $00
-                asl $02                      ; C405= 06 02       ..
+                .byte $06
+                .byte $02
 LC407:
-                ; bvc LC449                    ; C407= 50 40       P@
-                .byte $50
-                .byte $40
-                plp                          ; C409= 28          (
-                ;jsr $4030                    ; C40A= 20 30 40     0@
-                .byte $20
+                .byte >(20*1024)
+                .byte >(16*1024)
+                .byte >(10*1024)
+                .byte >(8*1024)
 LC40B:
-                .byte $30
-                .byte $40
-                cli                          ; C40D= 58          X
-                rts                          ; C40E= 60          `
+                .byte $30                    ; $3000 (20 KB)
+                .byte $40                    ; $4000 (16 KB)
+                .byte $58                    ; $5800 (10 KB)
+                .byte $60                    ; $6000 (8 KB)
 
 LC40F:
-                rti                          ; C40F= 40          @
-
-                ; bra LC3AF                    ; C410= 80 9D       ..
-                .byte $80
+                .byte <320
+                .byte <640
 LC411:
                 .word LD29D
                 .word LD295
@@ -1389,19 +1556,21 @@ LC419:
                 .byte >routines_C415_C419
 LC41D:
                 .byte $04
-                ora $06                      ; C41E= 05 06       ..
-                brk                          ; C420= 00          .
-                ora ($02,x)                  ; C421= 01 02       ..
+                .byte $05
+                .byte $06
+                .byte $00
+                .byte $01
+                .byte $02
 LC423:
-                .byte $FF                    ; C423= FF          .
-                ;beq LC435                    ; C424= F0 0F       p.
+                .byte $FF
                 .byte $F0
                 .byte $0F
-                brk                          ; C426= 00          .
+                .byte $00
 LC427:
-                ora ($22),y                  ; C427= 11 22       ."
-                .byte $44                    ; C429= 44          D
-                dey                          ; C42A= 88          .
+                .byte $11
+                .byte $22
+                .byte $44
+                .byte $88
 
 ; Electron Acorn bitmap for Ctrl-Break
 ; ------------------------------------
@@ -1468,7 +1637,7 @@ LC469:
                 lsr a
                 lsr a
                 clc
-                adc #vduRoutinesPage
+                adc #vduRoutinesBasePage
                 sta $035E
                 bit $D0
                 bvs LC4A9
@@ -2527,7 +2696,7 @@ LCB30:
 LCB60:
                 asl a                        ; CB60= 0A          .
                 tay                          ; CB61= A8          (
-                lda LC3C1,y                  ; CB62= B9 C1 C3    9AC
+                lda LC3C2-1,y                  ; CB62= B9 C1 C3    9AC
                 sta $0363                    ; CB65= 8D 63 03    .c.
 LCB68:
                 asl a                        ; CB68= 0A          .
@@ -3031,7 +3200,7 @@ LCE42:
                 tay                          ; CE46= A8          (
                 lda LC36D,y                  ; CE47= B9 6D C3    9mC
                 sta $D7                      ; CE4A= 85 D7       .W
-                lda LC36E,y                  ; CE4C= B9 6E C3    9nC
+                lda LC36D+1,y                  ; CE4C= B9 6E C3    9nC
                 ldy $0353                    ; CE4F= AC 53 03    ,S.
                 dey                          ; CE52= 88          .
                 bne LCE58                    ; CE53= D0 03       P.
@@ -4465,7 +4634,7 @@ LD77A:
                 tay                          ; D78A= A8          (
                 lda LC36D,y                  ; D78B= B9 6D C3    9mC
                 sta $D8                      ; D78E= 85 D8       .X
-                lda LC36E,y                  ; D790= B9 6E C3    9nC
+                lda LC36D+1,y                ; D790= B9 6E C3    9nC
                 ldy $0356                    ; D793= AC 56 03    ,V.
                 beq LD79B                    ; D796= F0 03       p.
                 lsr $D8                      ; D798= 46 D8       FX
@@ -4483,7 +4652,7 @@ LD79B:
                 and $0361                    ; D7B0= 2D 61 03    -a.
                 adc $0361                    ; D7B3= 6D 61 03    ma.
                 tay                          ; D7B6= A8          (
-                lda LC3C1,y                  ; D7B7= B9 C1 C3    9AC
+                lda LC3C2-1,y                ; D7B7= B9 C1 C3    9AC
                 sta $D1                      ; D7BA= 85 D1       .Q
                 pla                          ; D7BC= 68          h
                 ldy $0361                    ; D7BD= AC 61 03    ,a.
