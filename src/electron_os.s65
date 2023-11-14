@@ -6014,7 +6014,7 @@ LDDFF:
                 .if version==100
                 .include "readDigitFromString.s65"
                 .include "LDE13.s65"
-                .include "LDE18.s65"
+                .include "readHexDigitFromString.s65"
                 .endif
 
 LDE2D:
@@ -6590,7 +6590,7 @@ LE1BE:
                 rts                          ; E1C8= 60          `
 
                 .if version==300
-                .include "LDE18.s65"
+                .include "readHexDigitFromString.s65"
                 .include "LDE13.s65"
                 .include "readDigitFromString.s65"
                 .include "LE251.s65"
