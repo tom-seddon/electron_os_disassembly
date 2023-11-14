@@ -6,14 +6,45 @@ LFCE0=$fce0
 LFCE5=$fce5
 LFD00=$fd00
 LFDFE=$fdfe
-LFE00=$fe00
-LFE02=$fe02
-LFE03=$fe03
-LFE04=$fe04
-LFE05=$fe05
-LFE06=$fe06
-LFE07=$fe07
-LFE08=$fe08
+                .virtual $fe00
+LFE00: .block                                ; IRQ status
+masterIRQ=1
+powerOnReset=2
+displayEndIRQ=4
+rtcIRQ=8
+rxFullIRQ=16
+txEmptyIRQ=32
+highToneIRQ=64
+                .endblock
+                .endvirtual
+LFE02=$fe02                                  ; screen start LSB
+LFE03=$fe03                                  ; screen start MSB
+LFE04=$fe04                                  ; tape data shift register
+                .virtual $fe05
+LFE05: .block                                ; IRQ control+paging
+romMask=7
+romPageEnable=8
+clearDisplayEndIRQ=16
+clearRTCIRQ=32
+clearHighToneIRQ=64
+clearNMI=128
+                .endblock
+                .endvirtual
+LFE06=$fe06                                  ; counter register
+                .virtual $fe07
+LFE07: .block                                ; misc
+tapeInput=%00<<1
+sound=%01<<1
+tapeOutput=%10<<1
+unused=%11<<1
+
+displayModeShift=3
+
+tapeMotorOn=64
+capsLockLED=128
+                .endblock
+                .endvirtual
+LFE08=$fe08                                  ; palette start
 
                 .if version==300
 
@@ -37,6 +68,7 @@ beword: .macro value
                 .endmacro
                 
 *=$c000
+                
 ; CHARACTER SET
 ; =============
 LC000:
@@ -4610,11 +4642,11 @@ LD8D2:
                 inx                          ; X=&00
                 stx $FE00                    ;
                 stx $028D                    ; Set Last Break Type to &00=SoftBreak
-                lda #$F8                     ;
+                lda #LFE05.clearNMI|LFE05.clearHighToneIRQ|LFE05.clearRTCIRQ|LFE05.clearDisplayEndIRQ|LFE05.romPageEnable
                 sta LFE05
                 lda LFE00                    ; Read PowerOn flag from ULA
-                and #$02
-                eor #$02                     ; Save PowerOn flag
+                and #LFE00.powerOnReset
+                eor #LFE00.powerOnReset      ; Save PowerOn flag
                 pha
                 beq LD8FB                    ; If PowerOn, jump to clear memory
 
@@ -4708,7 +4740,7 @@ LD965:
                 sta LFE07                    ; D970= 8D 07 FE    ..~
                 .endif
                 sta LFE04                    ; D973= 8D 04 FE    ..~
-                ldx #$0C                     ; D976= A2 0C       ".
+                ldx #LFE00.rtcIRQ|LFE00.displayEndIRQ
                 stx $025B                    ; D978= 8E 5B 02    .[.
                 stx LFE00                    ; D97B= 8E 00 FE    ..~
                 jsr LE976                    ; D97E= 20 76 E9     vi
@@ -5033,7 +5065,7 @@ LDB47:
                 pha                          ; DB54= 48          H
                 ldy LFE00                    ; DB55= AC 00 FE    ,.~
                 tya                          ; DB58= 98          .
-                lsr a                        ; DB59= 4A          J
+                lsr a                        ; C set if any IRQ
                 bcc LDB6F                    ; DB5A= 90 13       ..
                 tya                          ; DB5C= 98          .
                 and $025B                    ; DB5D= 2D 5B 02    -[.
@@ -10474,7 +10506,7 @@ LFAB0:
                 php                          ; FAB0= 08          .
                 sei                          ; FAB1= 78          x
                 lda $025B                    ; FAB2= AD 5B 02    -[.
-                and #$8F                     ; FAB5= 29 8F       ).
+                and #~(LFE00.highToneIRQ|LFE00.txEmptyIRQ|LFE00.rxFullIRQ)&$ff
                 sta $025B                    ; FAB7= 8D 5B 02    .[.
                 sta LFE00                    ; FABA= 8D 00 FE    ..~
                 plp                          ; FABD= 28          (
