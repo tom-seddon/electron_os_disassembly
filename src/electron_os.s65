@@ -4752,7 +4752,7 @@ LD989:
 ; Check sideways ROMs and build ROM table
                 ldx #$00                     ; Start at ROM 0
 LD98B:
-                jsr LE39F                    ; Page in ROM X
+                jsr selectROMX                    ; Page in ROM X
                 ldx #$03                     ; 3+1 bytes to check
                 ldy $8007                    ; Get offset to (C) string
 LD993:
@@ -4792,10 +4792,10 @@ LD9A3:
                 lda #$7F                     ; D9AD= A9 7F       ).
                 sta $FB                      ; D9AF= 85 FB       .{
 LD9B1:
-                jsr LE3A9                    ; D9B1= 20 A9 E3     )c
+                jsr prepareForROMPaging                    ; D9B1= 20 A9 E3     )c
                 sty LFE05                    ; D9B4= 8C 05 FE    ..~
                 lda ($FA),y                  ; D9B7= B1 FA       1z
-                jsr LE3A9                    ; D9B9= 20 A9 E3     )c
+                jsr prepareForROMPaging                    ; D9B9= 20 A9 E3     )c
                 stx LFE05                    ; D9BC= 8E 05 FE    ..~
                 cmp ($FA),y                  ; D9BF= D1 FA       Qz
                 bne LD9A3                    ; D9C1= D0 E0       P`
@@ -4954,7 +4954,7 @@ LDAB0:
 LDAB1:
                 php                          ; Save Carry flag
                 stx $028C                    ; Save as Current Language
-                jsr LE39F                    ; Page in this ROM
+                jsr selectROMX                    ; Page in this ROM
                 lda #$80                     ; Prepare to print from &8008
                 ldy #$08
                 jsr LDC36                    ; Display ROM title at &8008
@@ -5002,13 +5002,13 @@ LDAE7:
 LDAF2:
                 ldx $F4                      ; Save current ROM in X
                 sty $F4                      ; Select ROM Y
-                jsr LE3A9                    ; Electron paging mechanism
+                jsr prepareForROMPaging                    ; Electron paging mechanism
                 sty LFE05                    ; Page in ROM Y
                 ldy #$00                     ; Get byte pointed to by &F6/7
                 lda ($F6),y
 LDB00:
                 pha                          ; Page ROM X back in
-                jsr LE39F
+                jsr selectROMX
                 pla
 LDB05:
                 rts
@@ -6156,7 +6156,7 @@ LE28F:
                 pha                          ; E296= 48          H
                 lda $028C                    ; E297= AD 8C 02    -..
                 bmi LE2B5                    ; E29A= 30 19       0.
-                jsr LE3A0                    ; E29C= 20 A0 E3      c
+                jsr selectROMA                    ; E29C= 20 A0 E3      c
                 lda $8006                    ; E29F= AD 06 80    -..
                 and #$10                     ; E2A2= 29 10       ).
                 beq LE2B5                    ; E2A4= F0 0F       p.
@@ -6165,7 +6165,7 @@ LE28F:
 LE2AB:
                 sty $025D                    ; E2AB= 8C 5D 02    .].
                 pla                          ; E2AE= 68          h
-                jsr LE3A0                    ; E2AF= 20 A0 E3      c
+                jsr selectROMA                    ; E2AF= 20 A0 E3      c
 LE2B2:
                 jmp LE333                    ; E2B2= 4C 33 E3    L3c
 
@@ -6287,7 +6287,7 @@ LE365:
                 pha                          ; E368= 48          H
                 lda $028C                    ; E369= AD 8C 02    -..
                 bmi LE387                    ; E36C= 30 19       0.
-                jsr LE3A0                    ; E36E= 20 A0 E3      c
+                jsr selectROMA                    ; E36E= 20 A0 E3      c
                 lda $8006                    ; E371= AD 06 80    -..
                 and #$10                     ; E374= 29 10       ).
                 beq LE387                    ; E376= F0 0F       p.
@@ -6296,7 +6296,7 @@ LE365:
 LE37D:
                 dec $025D                    ; E37D= CE 5D 02    N].
                 pla                          ; E380= 68          h
-                jsr LE3A0                    ; E381= 20 A0 E3      c
+                jsr selectROMA                    ; E381= 20 A0 E3      c
                 tya                          ; E384= 98          .
                 clc                          ; E385= 18          .
                 rts                          ; E386= 60          `
@@ -6322,23 +6322,23 @@ LE39C:
 
 ; Select ROM in X
 ; ---------------
-LE39F:
+selectROMX:
                 txa                          ; E39F= 8A          .
 
 ; Select ROM in A
 ; ---------------
-LE3A0:
-                sta $F4                      ; E3A0= 85 F4       .t
-                jsr LE3A9                    ; E3A2= 20 A9 E3     )c
-                sta LFE05                    ; E3A5= 8D 05 FE    ..~
-                rts                          ; E3A8= 60          `
+selectROMA:
+                sta $F4
+                jsr prepareForROMPaging
+                sta LFE05
+                rts
 
-LE3A9:
-                pha                          ; E3A9= 48          H
-                lda #$0C                     ; E3AA= A9 0C       ).
-                sta LFE05                    ; E3AC= 8D 05 FE    ..~
-                pla                          ; E3AF= 68          h
-                rts                          ; E3B0= 60          `
+prepareForROMPaging:
+                pha
+                lda #LFE05.romPageEnable|4
+                sta LFE05
+                pla
+                rts
 
 ; OSBYTE/OSWORD dispatch table
 ; ============================
@@ -7856,7 +7856,7 @@ LEC1E:
                 and #$3f
                 pha
                 lda #$c
-                jsr LE3A0
+                jsr selectROMA
                 lda sloggerROM12Hook
                 eor #$4C
                 bne LEC42_300
@@ -7868,7 +7868,7 @@ LEC42_300:
                 jsr LECF8
                 sta $fc
                 lda #8
-                jsr LE3A0
+                jsr selectROMA
                 php
                 jsr LED5A_300
                 plp
@@ -7882,7 +7882,7 @@ LEC59_300:
                 ora $fc
                 tax
                 pla
-                jsr LE3A0
+                jsr selectROMA
                 pla
                 ldy $fc
 LEC66_300:
@@ -7899,7 +7899,7 @@ LEC66_300:
                 sta $FC                      ; Store bitmask in &FC
                 ldx $F4                      ; X=current ROM
                 lda #$08                     ; Page in keyboard in ROM 8
-                jsr LE3A0
+                jsr selectROMA
                 php                          ; Read internal keypress from ROM
                 jsr LED38
                 plp
@@ -7908,7 +7908,7 @@ LEC66_300:
                 lda #$80                     ; Bit set, convert it to &80
 LEC3C:
                 sta $FC                      ; Store &00/&80 keypress state
-                jsr LE39F                    ; Restore current ROM from X
+                jsr selectROMX                    ; Restore current ROM from X
                 pla                          ; Get original keypress back
                 ora $FC                      ; OR with &00/&80 keypress state, return in X
                 tax
@@ -7993,7 +7993,7 @@ LEC95:
                 lda $F4                      ; EC9B= A5 F4       %t
                 pha                          ; EC9D= 48          H
                 lda #$08                     ; Select ROM 8 to read keyboard
-                jsr LE3A0
+                jsr selectROMA
                 lda #$FF                     ;
                 tay
                 sta $02C0                    ; ECA6= 8D C0 02    .@.
@@ -8041,7 +8041,7 @@ LECDD:
 LECE9:
                 ldx $02C0                    ; Get result
                 pla                          ; Restore previous ROM
-                jsr LE3A0
+                jsr selectROMA
                 txa                          ; Copy result to A and return
                 rts
 
@@ -8201,7 +8201,7 @@ LEDCA:
                 jsr LF047                    ; EDCA= 20 47 F0     Gp
 LEDCD:
                 pla                          ; EDCD= 68          h
-                jsr LE3A0                    ; EDCE= 20 A0 E3      c
+                jsr selectROMA                    ; EDCE= 20 A0 E3      c
                 txa                          ; EDD1= 8A          .
                 rts                          ; EDD2= 60          `
 
@@ -8836,7 +8836,7 @@ LF0AE:
                 dec $02A0,x                  ; F0B1= DE A0 02    ^ .
                 bpl LF0C3                    ; F0B4= 10 0D       ..
                 pha                          ; F0B6= 48          H
-                jsr LE39F                    ; F0B7= 20 9F E3     .c
+                jsr selectROMX                    ; F0B7= 20 9F E3     .c
                 pla                          ; F0BA= 68          h
                 jsr $8003                    ; F0BB= 20 03 80     ..
                 tax                          ; F0BE= AA          *
@@ -8847,7 +8847,7 @@ LF0C3:
                 bpl LF0AE                    ; F0C4= 10 E8       .h
 LF0C6:
                 pla                          ; F0C6= 68          h
-                jsr LE3A0                    ; F0C7= 20 A0 E3      c
+                jsr selectROMA                    ; F0C7= 20 A0 E3      c
                 txa                          ; F0CA= 8A          .
                 rts                          ; F0CB= 60          `
 
@@ -10814,7 +10814,7 @@ LFF51:
                 lda $F4                      ; FF76= A5 F4       %t
                 sta $0109,x                  ; FF78= 9D 09 01    ...
                 lda $0D9F,y                  ; FF7B= B9 9F 0D    9..
-                jsr LE3A0                    ; FF7E= 20 A0 E3      c
+                jsr selectROMA                    ; FF7E= 20 A0 E3      c
                 pla                          ; FF81= 68          h
                 tay                          ; FF82= A8          (
                 pla                          ; FF83= 68          h
@@ -10836,7 +10836,7 @@ LFF51:
                 pla                          ; FF9A= 68          h
                 pla                          ; FF9B= 68          h
                 pla                          ; FF9C= 68          h
-                jsr LE3A0                    ; FF9D= 20 A0 E3      c
+                jsr selectROMA                    ; FF9D= 20 A0 E3      c
                 pla                          ; FFA0= 68          h
                 plp                          ; FFA1= 28          (
 LFFA2:
