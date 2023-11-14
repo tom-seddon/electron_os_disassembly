@@ -1,5 +1,5 @@
 LDE18:
-                jsr LDE06                    ; DE18= 20 06 DE     .^
+                jsr readDigitFromString
                 bcs LDE2B                    ; DE1B= B0 0E       0.
                 and #$DF                     ; DE1D= 29 DF       )_
                 cmp #$47                     ; DE1F= C9 47       IG

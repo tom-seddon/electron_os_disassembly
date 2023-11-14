@@ -1,10 +1,10 @@
-LDE05:
-                iny                          ; DE05= C8          H
-LDE06:
-                lda ($F2),y                  ; DE06= B1 F2       1r
-                cmp #$3A                     ; DE08= C9 3A       I:
-                bcs LDE16                    ; DE0A= B0 0A       0.
-                cmp #$30                     ; DE0C= C9 30       I0
-                bcc LDE16                    ; DE0E= 90 06       ..
-                and #$0F                     ; DE10= 29 0F       ).
-                rts                          ; DE12= 60          `
+readNextDigitFromString:
+                iny
+readDigitFromString:
+                lda ($F2),y
+                cmp #'9'+1
+                bcs LDE16
+                cmp #'0'
+                bcc LDE16
+                and #$0F
+                rts

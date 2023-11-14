@@ -1,8 +1,8 @@
 LDD14:
                 stx $F2                      ; DD14= 86 F2       .r
                 sty $F3                      ; DD16= 84 F3       .s
-                lda #$08                     ; DD18= A9 08       ).
-                jsr LDDBA                    ; DD1A= 20 BA DD     :]
+                lda #fscStarCommand
+                jsr callFSCV                    ; DD1A= 20 BA DD     :]
                 ldy #$00                     ; DD1D= A0 00        .
 LDD1F:
                 lda ($F2),y                  ; DD1F= B1 F2       1r
@@ -15,11 +15,11 @@ LDD1F:
 LDD29:
                 ldy #$FF                     ; DD29= A0 FF        .
 LDD2B:
-                jsr LDDC2                    ; DD2B= 20 C2 DD     B]
+                jsr incAndSkipSpaces
                 beq LDDA0                    ; DD2E= F0 70       pp
                 cmp #$2A                     ; DD30= C9 2A       I*
                 beq LDD2B                    ; DD32= F0 F7       pw
-                jsr LDDC3                    ; DD34= 20 C3 DD     C]
+                jsr skipSpacesAndCheckForCRInStringInput
                 beq LDDA0                    ; DD37= F0 67       pg
                 cmp #$7C                     ; DD39= C9 7C       I|
                 beq LDDA0                    ; DD3B= F0 63       pc
@@ -27,8 +27,8 @@ LDD2B:
                 bne LDD49                    ; DD3F= D0 08       P.
                 iny                          ; DD41= C8          H
                 jsr LDD92                    ; DD42= 20 92 DD     .]
-                lda #$02                     ; DD45= A9 02       ).
-                bne LDDBA                    ; DD47= D0 71       Pq
+                lda #fscStarSlash
+                bne callFSCV                    ; DD47= D0 71       Pq
 LDD49:
                 sty $E6                      ; DD49= 84 E6       .f
                 ldx #$00                     ; DD4B= A2 00       ".
@@ -71,7 +71,7 @@ LDD7F:
                 pha                          ; DD7F= 48          H
                 lda LDC9B+1,x                  ; DD80= BD 9C DC    =.\
                 pha                          ; DD83= 48          H
-                jsr LDDC3                    ; DD84= 20 C3 DD     C]
+                jsr skipSpacesAndCheckForCRInStringInput
                 clc                          ; DD87= 18          .
                 php                          ; DD88= 08          .
                 jsr LDD8D                    ; DD89= 20 8D DD     .]
@@ -107,30 +107,30 @@ LDDAA:
                 beq LDDA0                    ; DDB1= F0 ED       pm
                 lda $E6                      ; DDB3= A5 E6       %f
                 jsr LDD96                    ; DDB5= 20 96 DD     .]
-                lda #$03                     ; DDB8= A9 03       ).
-LDDBA:
+                lda #fscUnknownCommand
+callFSCV:
                 jmp (FSCV)                  ; DDBA= 6C 1E 02    l..
 
 osbyte8B:
                 asl a                        ; DDBD= 0A          .
 osbyte7F:
                 and #$01                     ; DDBE= 29 01       ).
-                bpl LDDBA                    ; DDC0= 10 F8       .x
-LDDC2:
+                bpl callFSCV                    ; DDC0= 10 F8       .x
+incAndSkipSpaces:
                 iny                          ; DDC2= C8          H
-LDDC3:
+skipSpacesAndCheckForCRInStringInput:
                 lda ($F2),y                  ; DDC3= B1 F2       1r
-                cmp #$20                     ; DDC5= C9 20       I
-                beq LDDC2                    ; DDC7= F0 F9       py
-LDDC9:
+                cmp #' '                     ; DDC5= C9 20       I
+                beq incAndSkipSpaces
+checkForCR:
                 cmp #$0D                     ; DDC9= C9 0D       I.
                 rts                          ; DDCB= 60          `
 
 LDDCC:
-                bcc LDDC3                    ; DDCC= 90 F5       .u
+                bcc skipSpacesAndCheckForCRInStringInput
 LDDCE:
-                jsr LDDC3                    ; DDCE= 20 C3 DD     C]
-                cmp #$2C                     ; DDD1= C9 2C       I,
-                bne LDDC9                    ; DDD3= D0 F4       Pt
+                jsr skipSpacesAndCheckForCRInStringInput
+                cmp #','                     ; DDD1= C9 2C       I,
+                bne checkForCR
                 iny                          ; DDD5= C8          H
                 rts                          ; DDD6= 60          `

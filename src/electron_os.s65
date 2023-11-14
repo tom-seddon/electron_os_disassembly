@@ -2,6 +2,18 @@
 
 ;-------------------------------------------------------------------------
 
+fscOPT=0
+fscCheckEOF=1
+fscStarSlash=2
+fscUnknownCommand=3
+fscStarRUN=4
+fscStarCAT=5
+fscNewFS=6
+fscFileHandleRange=7
+fscStarCommand=8
+
+;-------------------------------------------------------------------------
+
 bufferKeyboardAddress=$03e0
 bufferKeyboardSize=32
 
@@ -5880,7 +5892,7 @@ LDC97:
 
 LDC9B:
                 .text "."                    ;
-                .beword LDDBA
+                .beword callFSCV
                 .byte $05
                 .text "FX"                   ; XY=>parameters
                 .beword LE0B0
@@ -5889,8 +5901,8 @@ LDC9B:
                 .beword LDDA1
                 .byte $00
                 .text "CAT"                  ; XY=>parameters, FSC &05
-                .beword LDDBA
-                .byte $05
+                .beword callFSCV
+                .byte fscStarCAT
                 .text "CODE"                 ; X,Y=parameters, OSBYTE &88
                 .beword LE0B6
                 .byte $88
@@ -5916,8 +5928,8 @@ LDC9B:
                 .beword LE0B6
                 .byte $8B
                 .text "RUN"                  ; XY=>parameters, FSC &04
-                .beword LDDBA
-                .byte $04
+                .beword callFSCV
+                .byte fscStarRUN
                 .text "ROM"                  ; X,Y=parameters, OSBYTE &8D
                 .beword LE0B6
                 .byte $8D
@@ -5934,8 +5946,8 @@ LDC9B:
                 .beword LE0B6
                 .byte $90
                 .text ""                     ; FSC &03
-                .beword LDDBA
-                .byte $03
+                .beword callFSCV
+                .byte fscUnknownCommand
                 .byte $00
 
                 .if version==100
@@ -5943,8 +5955,8 @@ LDC9B:
                 .endif
                 
 LDDD7:
-                jsr LDDC3                    ; DDD7= 20 C3 DD     C]
-                jsr LDE06                    ; DDDA= 20 06 DE     .^
+                jsr skipSpacesAndCheckForCRInStringInput                    ; DDD7= 20 C3 DD     C]
+                jsr readDigitFromString                    ; DDDA= 20 06 DE     .^
                 .if version==300
                 bcc LDD28_300
                 .else
@@ -5952,7 +5964,7 @@ LDDD7:
                 .endif
 LDDDF:
                 sta $E6                      ; DDDF= 85 E6       .f
-                jsr LDE05                    ; DDE1= 20 05 DE     .^
+                jsr readNextDigitFromString                    ; DDE1= 20 05 DE     .^
                 bcc LDDFF                    ; DDE4= 90 19       ..
                 tax                          ; DDE6= AA          *
                 lda $E6                      ; DDE7= A5 E6       %f
@@ -6319,7 +6331,7 @@ LE013:
                 jmp OSFILE                   ; E018= 4C DD FF    L].
 
 LE01B:
-                jsr LDDC3                    ; E01B= 20 C3 DD     C]
+                jsr skipSpacesAndCheckForCRInStringInput                    ; E01B= 20 C3 DD     C]
                 jsr LDE18                    ; E01E= 20 18 DE     .^
                 bcc LE02F                    ; E021= 90 0C       ..
                 jsr LDF7C                    ; E023= 20 7C DF     |_
@@ -6420,7 +6432,7 @@ LE0B6:
                 jsr LDDD7                    ; E0CE= 20 D7 DD     W]
                 bcc LE07E                    ; E0D1= 90 AB       .+
                 stx $E4                      ; E0D3= 86 E4       .d
-                jsr LDDC3                    ; E0D5= 20 C3 DD     C]
+                jsr skipSpacesAndCheckForCRInStringInput                    ; E0D5= 20 C3 DD     C]
                 bne LE07E                    ; E0D8= D0 A4       P$
 LE0DA:
                 ldy $E4                      ; E0DA= A4 E4       $d
@@ -7727,7 +7739,7 @@ LE7FC:
                 clc                          ; E7FC= 18          .
 LE7FD:
                 ror $E4                      ; E7FD= 66 E4       fd
-                jsr LDDC3                    ; E7FF= 20 C3 DD     C]
+                jsr skipSpacesAndCheckForCRInStringInput                    ; E7FF= 20 C3 DD     C]
                 iny                          ; E802= C8          H
                 cmp #$22                     ; E803= C9 22       I"
                 beq LE809                    ; E805= F0 02       p.
@@ -7765,7 +7777,7 @@ LE82A:
                 cmp #$22                     ; E835= C9 22       I"
                 beq LE868                    ; E837= F0 2F       p/
 LE839:
-                jsr LDDC3                    ; E839= 20 C3 DD     C]
+                jsr skipSpacesAndCheckForCRInStringInput                    ; E839= 20 C3 DD     C]
                 sec                          ; E83C= 38          8
                 rts                          ; E83D= 60          `
 
@@ -9451,8 +9463,8 @@ LF08B:
                 lda #$19
                 sta $03D1
 LF094:
-                lda #$06
-                jsr LDDBA
+                lda #fscNewFS
+                jsr callFSCV
                 ldx #$0E
 LF09B:
                 lda defaultPage02+(FILEV-1-vectors),x
