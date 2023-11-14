@@ -1647,59 +1647,66 @@ LC327:
                 .byte %10101010
                 .byte %11111111
 
-; This could use improvement - it is not particularly readable in the
-; listing file.
-_:=[]
-_..=[(LC48B,0)] ; VDU 0
-_..=[(LC4B5,1)] ; VDU 1
-_..=[(LC51C,0)] ; VDU 2
-_..=[(LC527,0)] ; VDU 3
-_..=[(LC52E,0)] ; VDU 4
-_..=[(LC535,0)] ; VDU 5
-_..=[(LC48B,0)] ; VDU 6
-_..=[(LE64B,0)] ; VDU 7
-_..=[(LC53E,0)] ; VDU 8
-_..=[(LC5E2,0)] ; VDU 9
-_..=[(LC66A,0)] ; VDU 10
-_..=[(LC5D9,0)] ; VDU 11
-_..=[(LC6F6,0)] ; VDU 12
-_..=[(LC75E,0)] ; VDU 13
-_..=[(LC513,0)] ; VDU 14
-_..=[(LC52C,0)] ; VDU 15
-_..=[(LC76C,0)] ; VDU 16
-_..=[(LC7A5,1)] ; VDU 17
-_..=[(LC7C4,2)] ; VDU 18
-_..=[(LC841,5)] ; VDU 19
-_..=[(LC7F6,0)] ; VDU 20
-_..=[(LC521,0)] ; VDU 21
-_..=[(LC8EC,1)] ; VDU 22
-_..=[(LC8F2,9)] ; VDU 23
-_..=[(LCA38,8)] ; VDU 24
-_..=[(LC986,5)] ; VDU 25
-_..=[(LCA02,0)] ; VDU 26
-_..=[(LC48B,0)] ; VDU 27
-_..=[(LC674,4)] ; VDU 28
-_..=[(LCAA1,4)] ; VDU 29
-_..=[(LC716,0)] ; VDU 30
-_..=[(LC725,2)] ; VDU 31
-_..=[(LCAAB,0)] ; VDU 32
-vdu_routines=_
+; This is written with useable listing output in mind, which is why
+; it's a bit weird.
 
-LC32B:
-                .for i=0,i<len(vdu_routines),i+=1
-                .byte <vdu_routines[i][0]
-                .next
+vduEntry: .macro routine,n,lsb
+                .if \lsb
+
+                .byte <\routine
+
+                .elif !\lsb && \n==0
                 
-LC34C:
-                .for i=0,i<len(vdu_routines),i+=1
-                .if vdu_routines[i][1]==0
-                .byte >vdu_routines[i][0]
-                .else
-                .cerror !(vdu_routines[i][0]>=(vduRoutinesBasePage<<8)&&vdu_routines[i][0]<(vduRoutinesBasePage<<8)+$7ff)
-                .cerror !(vdu_routines[i][1]>=0&&vdu_routines[i][1]<16)
-                .byte (16-vdu_routines[i][1])|((((>vdu_routines[i][0])-vduRoutinesBasePage)&$f)<<4)
+                .cerror ((\routine)&$8000)==0
+
+                .byte >\routine
+
+                .elif !\lsb
+
+                .cerror !((>(\routine))>=vduRoutinesBasePage&&(>(\routine))<vduRoutinesBasePage+8)
+                .cerror !((\n)>0&&(\n)<16)
+                .byte (16-(\n))|(((>(\routine))-vduRoutinesBasePage)&$f)<<4
                 .endif
-                .next
+                .endmacro
+
+vduRoutinesTable: .macro lsb
+                .vduEntry LC48B,0,\lsb ; VDU 0
+                .vduEntry LC4B5,1,\lsb ; VDU 1
+                .vduEntry LC51C,0,\lsb ; VDU 2
+                .vduEntry LC527,0,\lsb ; VDU 3
+                .vduEntry LC52E,0,\lsb ; VDU 4
+                .vduEntry LC535,0,\lsb ; VDU 5
+                .vduEntry LC48B,0,\lsb ; VDU 6
+                .vduEntry LE64B,0,\lsb ; VDU 7
+                .vduEntry LC53E,0,\lsb ; VDU 8
+                .vduEntry LC5E2,0,\lsb ; VDU 9
+                .vduEntry LC66A,0,\lsb ; VDU 10
+                .vduEntry LC5D9,0,\lsb ; VDU 11
+                .vduEntry LC6F6,0,\lsb ; VDU 12
+                .vduEntry LC75E,0,\lsb ; VDU 13
+                .vduEntry LC513,0,\lsb ; VDU 14
+                .vduEntry LC52C,0,\lsb ; VDU 15
+                .vduEntry LC76C,0,\lsb ; VDU 16
+                .vduEntry LC7A5,1,\lsb ; VDU 17
+                .vduEntry LC7C4,2,\lsb ; VDU 18
+                .vduEntry LC841,5,\lsb ; VDU 19
+                .vduEntry LC7F6,0,\lsb ; VDU 20
+                .vduEntry LC521,0,\lsb ; VDU 21
+                .vduEntry LC8EC,1,\lsb ; VDU 22
+                .vduEntry LC8F2,9,\lsb ; VDU 23
+                .vduEntry LCA38,8,\lsb ; VDU 24
+                .vduEntry LC986,5,\lsb ; VDU 25
+                .vduEntry LCA02,0,\lsb ; VDU 26
+                .vduEntry LC48B,0,\lsb ; VDU 27
+                .vduEntry LC674,4,\lsb ; VDU 28
+                .vduEntry LCAA1,4,\lsb ; VDU 29
+                .vduEntry LC716,0,\lsb ; VDU 30
+                .vduEntry LC725,2,\lsb ; VDU 31
+                .vduEntry LCAAB,0,\lsb ; VDU 32
+                .endmacro
+
+LC32B: .vduRoutinesTable true
+LC34C: .vduRoutinesTable false
 
 LC36D:
                 .beword 0*640
