@@ -2,6 +2,35 @@
 
 ;-------------------------------------------------------------------------
 
+bufferKeyboardAddress=$03e0
+bufferKeyboardSize=32
+
+bufferRS423InputAddress=$0a00
+bufferRS423InputSize=256
+
+bufferRS423OutputAddress=$0900
+bufferRS423OutputSize=192
+
+bufferPrinterAddress=$0880
+bufferPrinterSize=64
+
+bufferSoundChannel0Address=$0840
+bufferSoundChannel0Size=16
+
+bufferSoundChannel1Address=$0850
+bufferSoundChannel1Size=16
+
+bufferSoundChannel2Address=$0860
+bufferSoundChannel2Size=16
+
+bufferSoundChannel3Address=$0870
+bufferSoundChannel3Size=16
+
+bufferSpeechAddress=$09c0
+bufferSpeechSize=64
+
+;-------------------------------------------------------------------------
+
                 .virtual $200
 vectors:
 USERV:
@@ -6254,14 +6283,6 @@ LDFC5:
                 beq LE013                    ; DFD3= F0 3E       p>
 LDFD5:
                 brk                          ; DFD5= 00          .
-                ; .byte $FC                    ; DFD6= FC          |
-                ; .byte $42                    ; DFD7= 42          B
-                ; adc ($64,x)                  ; DFD8= 61 64       ad
-                ; jsr $6461                    ; DFDA= 20 61 64     ad
-                ; stz $72                      ; DFDD= 64 72       dr
-                ; adc $73                      ; DFDF= 65 73       es
-                ; .byte $73                    ; DFE1= 73          s
-                ; brk                          ; DFE2= 00          .
                 .text $fc,"Bad address",0
 osbyte77:
                 ldx #$10                     ; DFE3= A2 10       ".
@@ -6358,24 +6379,11 @@ LE05D:
                 beq LE013                    ; E07C= F0 95       p.
 LE07E:
                 brk                          ; E07E= 00          .
-                ; inc $6142,x                  ; E07F= FE 42 61    ~Ba
-                ; stz $20                      ; E082= 64 20       d
-                ; .byte $63                    ; E084= 63          c
-                ; .byte $6F                    ; E085= 6F          o
-                ; adc $616D                    ; E086= 6D 6D 61    mma
-                ; ror $0064                    ; E089= 6E 64 00    nd.
                 .text $fe,"Bad command"
                 .cerror *!=LE08B             ; double use of the $00!
-                ; .byte $FB                    ; E08C= FB          {
-                ; .byte $42                    ; E08D= 42          B
-                ; adc ($64,x)                  ; E08E= 61 64       ad
-                ; jsr $656B                    ; E090= 20 6B 65     ke
 LE08B:
                 brk
                 .text $fb,"Bad key",0
-                ; adc $2000,y                  ; E093= 79 00 20    y.
-                ; .byte $D7                    ; E096= D7          W
-                ; cmp LF190,x                  ; E097= DD 90 F1    ].q
 LE095:
                 jsr LDDD7
                 bcc LE08B
@@ -6497,13 +6505,7 @@ LE13F:
                 lda $0268                    ; E152= AD 68 02    -h.
                 beq LE164                    ; E155= F0 0D       p.
                 brk                          ; E157= 00          .
-                ;plx                          ; E158= FA          z
-                .byte $FA
-                .byte $4B                    ; E159= 4B          K
-                adc $79                      ; E15A= 65 79       ey
-                jsr $6E69                    ; E15C= 20 69 6E     in
-                jsr $7375                    ; E15F= 20 75 73     us
-                adc $00                      ; E162= 65 00       e.
+                .text $fa,"Key in use",0
 LE164:
                 dec $0284                    ; E164= CE 84 02    N..
                 pla                          ; E167= 68          h
@@ -6542,48 +6544,32 @@ LE190:
                 plp                          ; E1A1= 28          (
                 rts                          ; E1A2= 60          `
 
-LE1A3:
-                .byte $03                    ; E1A3= 03          .
-                asl a                        ; E1A4= 0A          .
-                ;php                          ; E1A5= 08          .
-                .byte $08
-                .byte $07                    ; E1A6= 07          .
-                .byte $07                    ; E1A7= 07          .
-                .byte $07                    ; E1A8= 07          .
-                .byte $07                    ; E1A9= 07          .
-                .byte $07                    ; E1AA= 07          .
-                ;ora #$00                     ; E1AB= 09 00       ..
-                .byte $09
-LE1AC:
-                .byte $00
-                brk                          ; E1AD= 00          .
-                ;cpy #$C0                     ; E1AE= C0 C0       @@
-                .byte $C0
-                .byte $C0
-                ;bvc LE212                    ; E1B0= 50 60       P`
-                .byte $50
-                .byte $60
-                ;bvs LE134                    ; E1B2= 70 80       p.
-                .byte $70
-                .byte $80
-                ;brk                          ; E1B4= 00          .
-                .byte $00
-LE1B5:
-                ;cpx #$00                     ; E1B5= E0 00       `.
-                .byte $E0
-                .byte $00
-                ;rti                          ; E1B7= 40          @
-                .byte $40
+bufferTableEntry: .macro address,size,table
+                .if \table==0
+                .byte >((\address)-(256-(\size)))
+                .elsif \table==1
+                .byte <((\address)-(256-(\size)))
+                .elsif \table==2
+                .byte 256-(\size)
+                .endif
+                .endmacro
 
-                ;cpy #$F0                     ; E1B8= C0 F0       @p
-                .byte $C0
-                .byte $F0
-                ;beq LE1AC                    ; E1BA= F0 F0       pp
-                .byte $F0
-                .byte $F0
-                ;beq LE17E                    ; E1BC= F0 C0       p@
-                .byte $F0
-                .byte $C0
+bufferTable: .macro table
+                .bufferTableEntry bufferKeyboardAddress,bufferKeyboardSize,\table
+                .bufferTableEntry bufferRS423InputAddress,bufferRS423InputSize,\table
+                .bufferTableEntry bufferRS423OutputAddress,bufferRS423OutputSize,\table
+                .bufferTableEntry bufferPrinterAddress,bufferPrinterSize,\table
+                .bufferTableEntry bufferSoundChannel0Address,bufferSoundChannel0Size,\table
+                .bufferTableEntry bufferSoundChannel1Address,bufferSoundChannel1Size,\table
+                .bufferTableEntry bufferSoundChannel2Address,bufferSoundChannel2Size,\table
+                .bufferTableEntry bufferSoundChannel3Address,bufferSoundChannel3Size,\table
+                .bufferTableEntry bufferSpeechAddress,bufferSpeechSize,\table
+                .endmacro
+                
+LE1A3: .bufferTable 0
+LE1AC: .bufferTable 1
+LE1B5: .bufferTable 2
+
 LE1BE:
                 lda LE1AC,x                  ; E1BE= BD AC E1    =,a
                 sta $FA                      ; E1C1= 85 FA       .z
