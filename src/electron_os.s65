@@ -300,8 +300,10 @@ tapeInput=%00<<1
 sound=%01<<1
 tapeOutput=%10<<1
 unused=%11<<1
+commsModeMask=%11<<1
 
 displayModeShift=3
+displayModeMask=7<<displayModeShift
 
 tapeMotorOn=64
 capsLockLED=128
@@ -2663,7 +2665,7 @@ LCB21:
                 stx $0366                    ; CB2D= 8E 66 03    .f.
 LCB30:
                 .if version==300
-                jsr LDADA
+                jsr getNormalisedMODE
                 php
                 sei
                 sta $0355
@@ -2673,13 +2675,13 @@ LCB30:
                 jsr LE495
                 stx $0355
                 .else
-                jsr LDADA                    ; CB30= 20 DA DA     ZZ
+                jsr getNormalisedMODE                    ; CB30= 20 DA DA     ZZ
                 stx $0355                    ; CB33= 8E 55 03    .U.
                 php                          ; CB36= 08          .
                 sei                          ; CB37= 78          x
                 sta $02F4                    ; CB38= 8D F4 02    .t.
                 lda $0282                    ; CB3B= AD 82 02    -..
-                and #$C7                     ; CB3E= 29 C7       )G
+                and #~(7<<LFE07.displayModeShift)&$ff
                 ora $02F4                    ; CB40= 0D F4 02    .t.
                 sta $0282                    ; CB43= 8D 82 02    ...
                 sta LFE07                    ; CB46= 8D 07 FE    ..~
@@ -4859,7 +4861,7 @@ valueFF:
 
 ; RESET
 ; =====
-LD8D2:
+resetEntryPoint:
                 lda #$40                     ; Put RTI in NMI code space
                 sta $0D00
                 sei                          ; Disable IRQs, put in Decimal mode
@@ -4932,7 +4934,7 @@ LD936:
                 bcc LD93C                    ; D938= 90 02       ..
                 lda #$FF                     ; D93A= A9 FF       ).
 LD93C:
-                sta $0200,x                  ; D93C= 9D 00 02    ...
+                sta vectors,x                  ; D93C= 9D 00 02    ...
                 inx                          ; D93F= E8          h
                 bne LD936                    ; D940= D0 F4       Pt
                 stx $02F7                    ; D942= 8E F7 02    .w.
@@ -4945,7 +4947,7 @@ LD948:
 
 LD94D:
                 lda LD845-1,y                ; Set up vectors
-                sta $0200-1,y
+                sta vectors-1,y
                 dey
                 bne LD94D
                 lda #$07                     ; D956= A9 07       ).
@@ -4958,8 +4960,8 @@ LD94D:
                 jsr LEEC2                    ; D962= 20 C2 EE     Bn
 LD965:
                 lda $028F                    ; Get startup options
-                jsr LDADA                    ; Convert mode number into ULA mode setting
-                ora #$84                     ; D96B= 09 84       ..
+                jsr getNormalisedMODE                    ; Convert mode number into ULA mode setting
+                ora #LFE07.capsLockLED|LFE07.tapeOutput
                 .if version==300
                 jsr LE495
                 .else
@@ -5198,11 +5200,13 @@ osbyte8E:
 LDAD7:
                 jmp $0400                    ; Enter Tube code to start language
 
+;-------------------------------------------------------------------------
+
 ; Convert MODE number into table offset
 ; On entry, A=mode
 ; On exit,  X=validated mode number 0-6
 ;           A=validated mode number * 8
-LDADA:
+getNormalisedMODE:
                 and #$07                     ; DADA= 29 07       ).
                 cmp #$07                     ; DADC= C9 07       I.
                 bcc LDAE2                    ; DADE= 90 02       ..
@@ -5214,9 +5218,11 @@ LDAE2:
                 asl a                        ; DAE5= 0A          .
                 rts                          ; DAE6= 60          `
 
+;-------------------------------------------------------------------------
+
 ; IRQ Handler
 ; ===========
-LDAE7:
+irqEntryPoint:
                 sta $FC                      ; Save A in IRQ store
                 pla                          ; Get flags from stack
                 pha
@@ -5633,7 +5639,7 @@ LDE2D:
                 bpl LDE44                    ; DE3A= 10 08       ..
                 tay                          ; DE3C= A8          (
                 lda #$04                     ; DE3D= A9 04       ).
-                jsr LE395                    ; DE3F= 20 95 E3     .c
+                jsr callNETV                    ; DE3F= 20 95 E3     .c
                 bcs LDE9D                    ; DE42= B0 59       0Y
 LDE44:
                 clc                          ; DE44= 18          .
@@ -5760,7 +5766,7 @@ LDEFB:
                 ldx #$03                     ; DEFB= A2 03       ".
 LDEFD:
                 ldy $0285                    ; DEFD= AC 85 02    ,..
-                jsr LE395                    ; DF00= 20 95 E3     .c
+                jsr callNETV                    ; DF00= 20 95 E3     .c
                 jmp (UPTV)                   ; DF03= 6C 22 02    l".
 
 LDF06:
@@ -5832,7 +5838,7 @@ LDF63:
 
 LDF68:
                 sei                          ; DF68= 78          x
-                jsr LE21E                    ; DF69= 20 1E E2     .b
+                jsr callINSV                    ; DF69= 20 1E E2     .b
                 bcc LDF7B                    ; DF6C= 90 0D       ..
                 jsr LE7E5                    ; DF6E= 20 E5 E7     eg
                 bmi LDF7B                    ; DF71= 30 08       0.
@@ -6290,7 +6296,7 @@ LE202:
                 beq LE24D                    ; E20A= F0 41       pA
                 tya                          ; E20C= 98          .
                 ldy $FA                      ; E20D= A4 FA       $z
-                jsr LE7E2                    ; E20F= 20 E2 E7     bg
+                jsr callEVENTV                    ; E20F= 20 E2 E7     bg
 LE212:
                 pla                          ; E212= 68          h
                 plp                          ; E213= 28          (
@@ -6304,8 +6310,8 @@ LE216:
                 tay                          ; E21C= A8          (
 osbyte8A:
                 tya                          ; E21D= 98          .
-LE21E:
-                jmp ($022A)                  ; E21E= 6C 2A 02    l*.
+callINSV:
+                jmp (INSV)                  ; E21E= 6C 2A 02    l*.
 
 LE221:
                 php                          ; E221= 08          .
@@ -6536,8 +6542,8 @@ LE387:
                 bne LE37D                    ; E391= D0 EA       Pj
 LE393:
                 lda #$06                     ; E393= A9 06       ).
-LE395:
-                jmp ($0224)                  ; E395= 6C 24 02    l$.
+callNETV:
+                jmp (NETV)                  ; E395= 6C 24 02    l$.
 
 LE398:
                 pha                          ; E398= 48          H
@@ -6771,7 +6777,7 @@ LE4DE:
                 txa                          ; Toggle to convert to keyscan number
                 eor #$7F
                 tax
-                jsr LEC4C                    ; Scan for key or keys
+                jsr callKEYV                    ; Scan for key or keys
                 rol a                        ; Move &00/&80 keypress to Carry
 
 ; OSBYTE &82 - Read address high word
@@ -6803,11 +6809,11 @@ LE502:
                 tax
                 cpx #$02                     ; CC=input, read used; CS=output, read free
                 clv                          ; VC=read size, jump to CNTV
-                bvc LE50E
+                bvc callCNPV
 LE50B:
                 bit valueFF                    ; Set V
-LE50E:
-                jmp ($022E)                  ; CNTV, examine buffer status
+callCNPV:
+                jmp (CNPV)                  ; CNTV, examine buffer status
 
 ; OSBYTE &80 - ADVAL
 ; ------------------
@@ -6882,7 +6888,7 @@ LE564:
                 bpl LE573                    ; E56A= 10 07       ..
                 txa                          ; E56C= 8A          .
                 clv                          ; E56D= B8          8
-                jsr LE395                    ; E56E= 20 95 E3     .c
+                jsr callNETV                    ; E56E= 20 95 E3     .c
                 bvs LE58D                    ; E571= 70 1A       p.
 LE573:
                 lda LE3B1+1,y                  ; E573= B9 B2 E3    92c
@@ -7059,7 +7065,7 @@ LE65A:
                 jsr LE6A4                    ; E65F= 20 A4 E6     $f
                 tax                          ; E662= AA          *
                 lda $0264                    ; E663= AD 64 02    -d.
-                jsr LE21E                    ; E666= 20 1E E2     .b
+                jsr callINSV                    ; E666= 20 1E E2     .b
                 lda $0266                    ; E669= AD 66 02    -f.
                 pha                          ; E66C= 48          H
                 lda $0265                    ; E66D= AD 65 02    -e.
@@ -7068,9 +7074,9 @@ LE671:
                 sec                          ; E671= 38          8
                 ror $0814                    ; E672= 6E 14 08    n..
                 pla                          ; E675= 68          h
-                jsr LE21E                    ; E676= 20 1E E2     .b
+                jsr callINSV                    ; E676= 20 1E E2     .b
                 pla                          ; E679= 68          h
-                jsr LE21E                    ; E67A= 20 1E E2     .b
+                jsr callINSV                    ; E67A= 20 1E E2     .b
                 plp                          ; E67D= 28          (
                 rts                          ; E67E= 60          `
 
@@ -7224,7 +7230,7 @@ LE744:
                 bcs LE712                    ; E75B= B0 B5       05
 LE75D:
                 jsr OSNEWL                   ; E75D= 20 E7 FF     g.
-                jsr LE395                    ; E760= 20 95 E3     .c
+                jsr callNETV                    ; E760= 20 95 E3     .c
 LE763:
                 lda $FF                      ; E763= A5 FF       %.
                 rol a                        ; E765= 2A          *
@@ -7354,14 +7360,14 @@ osbyte76:
                 bmi LE7DF                    ; E7D8= 30 05       0.
                 clc                          ; E7DA= 18          .
                 clv                          ; E7DB= B8          8
-                jsr LEC4C                    ; E7DC= 20 4C EC     Ll
+                jsr callKEYV                    ; E7DC= 20 4C EC     Ll
 LE7DF:
                 plp                          ; E7DF= 28          (
                 rol a                        ; E7E0= 2A          *
                 rts                          ; E7E1= 60          `
 
-LE7E2:
-                jmp ($0220)                  ; E7E2= 6C 20 02    l .
+callEVENTV:
+                jmp (EVENTV)                  ; E7E2= 6C 20 02    l .
 
 LE7E5:
                 bcc LE7F9                    ; E7E5= 90 12       ..
@@ -8149,8 +8155,8 @@ LEC48:
 
 LEC49:
                 bit valueFF                    ; EC49= 2C BC D8    ,<X
-LEC4C:
-                jmp ($0228)                  ; EC4C= 6C 28 02    l(.
+callKEYV:
+                jmp (KEYV)                  ; EC4C= 6C 28 02    l(.
 
 ; OSBYTE &7A - Keyboard scan from &10
 ; -----------------------------------
@@ -8160,7 +8166,7 @@ osbyte7A:
 ; OSBYTE &79 - Keyboard scan from X
 ; ---------------------------------
 osbyte79:
-                bcs LEC4C                    ; If Carry set from OSBYTE entry, vector via KEYV
+                bcs callKEYV                    ; If Carry set from OSBYTE entry, vector via KEYV
 ;               :\ And thence back to:
 
 ; KEYV - Scan keyboard, C=1, V=0, X=first key
@@ -10779,7 +10785,7 @@ LFADD:
                 sei
                 pha
                 lda $0282
-                and #$f9
+                and #~(LFE07.commsModeMask)&$ff
                 sta $0282
                 pla
                 ora $0282
@@ -10795,7 +10801,7 @@ LFADD:
                 php                          ; FAE2= 08          .
                 sei                          ; FAE3= 78          x
                 lda $0282                    ; FAE4= AD 82 02    -..
-                and #$F9                     ; FAE7= 29 F9       )y
+                and #~(LFE07.commsModeMask)&$ff
                 ora $02F4                    ; FAE9= 0D F4 02    .t.
                 sta $0282                    ; FAEC= 8D 82 02    ...
                 plp                          ; FAEF= 28          (
@@ -11094,25 +11100,30 @@ LFFB7:                                       ; Address of default vector and sys
 OSRDRM:                                      ; FFB9
                 jmp LDAF2
                 jmp LD6D8                    ; FFBC
+OSEVEN:
                 jmp LE202                    ; FFBF
+GSINIT:
                 jmp LE7FD                    ; FFC2
+GSREAD:
                 jmp LE80E                    ; FFC5
+NVRDCH:
                 jmp LDC50                    ; FFC8
+NVWRCH:
                 jmp LDE2D                    ; FFCB
 OSFIND:                                      ; FFCE
-                jmp ($021C)
+                jmp (FINDV)
 OSGBPB:                                      ; FFD1
-                jmp ($021A)
+                jmp (GBPBV)
 OSBPUT:                                      ; FFD4
-                jmp ($0218)
+                jmp (BPUTV)
 OSBGET:                                      ; FFD7
-                jmp ($0216)
+                jmp (BGETV)
 OSARGS:                                      ; FFDA
-                jmp ($0214)
+                jmp (ARGSV)
 OSFILE:                                      ; FFDD
-                jmp ($0212)
+                jmp (FILEV)
 OSRDCH:                                      ; FFE0
-                jmp ($0210)
+                jmp (RDCHV)
 OSASCI:                                      ; FFE3
                 cmp #$0D
                 bne OSWRCH
@@ -11122,16 +11133,16 @@ OSNEWL:                                      ; FFE7
 OSWRCR:                                      ; FFEC
                 lda #$0D
 OSWRCH:                                      ; FFEE
-                jmp ($020E)
+                jmp (WRCHV)
 OSWORD:                                      ; FFF1
-                jmp ($020C)
+                jmp (WORDV)
 OSBYTE:                                      ; FFF4
-                jmp ($020A)
+                jmp (BYTEV)
 OSCLI:                                      ; FFF7
-                jmp ($0208)
+                jmp (CLIV)
 NMIV:                                        ; FFFA
                 .word $0D00
 RSTV:                                        ; FFFC
-                .word LD8D2
+                .word resetEntryPoint
 IRQV:                                        ; FFFE
-                .word LDAE7
+                .word irqEntryPoint
