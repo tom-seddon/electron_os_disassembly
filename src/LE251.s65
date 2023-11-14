@@ -1,12 +1,12 @@
-LE251:
-                pha                          ; E251= 48          H
-                and #$DF                     ; E252= 29 DF       )_
-                cmp #$41                     ; E254= C9 41       IA
-                bcc LE25C                    ; E256= 90 04       ..
-                cmp #$5B                     ; E258= C9 5B       I[
-                bcc LE25D                    ; E25A= 90 01       ..
+readLetterFromString:
+                pha
+                and #$DF
+                cmp #'A'        ; taken if not letter
+                bcc LE25C
+                cmp #'Z'+1
+                bcc LE25D       ; taken if letter
 LE25C:
-                sec                          ; E25C= 38          8
+                sec
 LE25D:
-                pla                          ; E25D= 68          h
-                rts                          ; E25E= 60          `
+                pla
+                rts

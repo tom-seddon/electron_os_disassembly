@@ -8351,7 +8351,7 @@ LEBB6:
                 rol $0277                    ; CAPS not set, skip past
                 bcs LEBC3
                 txa                          ;
-                jsr LE251                    ; If not a letter, skip past
+                jsr readLetterFromString  ; If not a letter, skip past
                 bcs LEBC3
                 eor #$20                     ; Toggle case
 LEBC3:
@@ -11038,7 +11038,7 @@ LF9F0:
                 rts                          ; F9F0= 60          `
 
 LF9F1:
-                jsr LE251                    ; F9F1= 20 51 E2     Qb
+                jsr readLetterFromString
                 eor $03B2,x                  ; F9F4= 5D B2 03    ]2.
                 bcs LF9FB                    ; F9F7= B0 02       0.
                 and #$DF                     ; F9F9= 29 DF       )_

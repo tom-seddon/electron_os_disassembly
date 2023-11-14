@@ -43,7 +43,7 @@ LDD58:
                 bcs LDD7D                    ; DD58= B0 23       0#
                 inx                          ; DD5A= E8          h
                 lda ($F2),y                  ; DD5B= B1 F2       1r
-                jsr LE251                    ; DD5D= 20 51 E2     Qb
+                jsr readLetterFromString
                 bcc LDD4F                    ; DD60= 90 ED       .m
 LDD62:
                 lda LDC9B,x                  ; DD62= BD 9B DC    =.\
