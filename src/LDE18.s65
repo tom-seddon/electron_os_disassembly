@@ -1,14 +1,14 @@
-LDE18:
+readHexDigitFromString:
                 jsr readDigitFromString
-                bcs LDE2B                    ; DE1B= B0 0E       0.
-                and #$DF                     ; DE1D= 29 DF       )_
-                cmp #$47                     ; DE1F= C9 47       IG
-                bcs LDE13                    ; DE21= B0 F0       0p
-                cmp #$41                     ; DE23= C9 41       IA
-                bcc LDE13                    ; DE25= 90 EC       .l
-                php                          ; DE27= 08          .
-                sbc #$37                     ; DE28= E9 37       i7
-                plp                          ; DE2A= 28          (
+                bcs LDE2B       ; taken if digit
+                and #$DF        ; convert to upper case
+                cmp #'F'+1
+                bcs LDE13       ; taken if not hex digit
+                cmp #'A'
+                bcc LDE13       ; taken if not hex digit
+                php
+                sbc #'A'-10     ; convert to number
+                plp
 LDE2B:
-                iny                          ; DE2B= C8          H
-                rts                          ; DE2C= 60          `
+                iny
+                rts

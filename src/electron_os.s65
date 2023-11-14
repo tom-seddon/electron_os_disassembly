@@ -6332,12 +6332,12 @@ LE013:
 
 LE01B:
                 jsr skipSpacesAndCheckForCRInStringInput                    ; E01B= 20 C3 DD     C]
-                jsr LDE18                    ; E01E= 20 18 DE     .^
+                jsr readHexDigitFromString                    ; E01E= 20 18 DE     .^
                 bcc LE02F                    ; E021= 90 0C       ..
                 jsr LDF7C                    ; E023= 20 7C DF     |_
 LE026:
                 jsr LDF8D                    ; E026= 20 8D DF     ._
-                jsr LDE18                    ; E029= 20 18 DE     .^
+                jsr readHexDigitFromString                    ; E029= 20 18 DE     .^
                 bcs LE026                    ; E02C= B0 F8       0x
                 sec                          ; E02E= 38          8
 LE02F:
