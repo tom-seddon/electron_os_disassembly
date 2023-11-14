@@ -56,6 +56,314 @@ IND2V:
                 .fill 2
 IND3V:
                 .fill 2
+mosVariables:
+                
+; OSBYTE 166 (&A6) Read start address of MOS variables [MasRef D.2-50]
+; OSBYTE 167 (&A7) Read start address of MOS variablespointer table  [MasRef D.2-50]
+mosVariablesAddress: .fill 2
+
+; OSBYTE 168 (&A8) Read address of ROM pointer table [MasRef D.2-51]
+; OSBYTE 169 (&A9) Read address of ROM pointer table [MasRef D.2-51]
+extendedVectorSpaceAddress: .fill 2
+
+; OSBYTE 170 (&AA) Read address of ROM information table [MasRef D.2-51]
+; OSBYTE 171 (&AB) Read address of ROM information table [MasRef D.2-51]
+romInformationTableAddress: .fill 2
+
+; OSBYTE 172 (&AC) Read address of keyboard translation table [MasRef D.2-52]
+; OSBYTE 173 (&AD) Read address of keyboard translation table [MasRef D.2-52]
+keyboardTranslationTableAddress: .fill 2
+
+; OSBYTE 174 (&AE) Read address of VDU variables origin [MasRef D.2-52]
+; OSBYTE 175 (&AF) Read address of VDU variables origin [MasRef D.2-52]
+vduVariablesAddress: .fill 2
+
+; OSBYTE 176 (&B0) Read/Write CFS timeout counter [MasRef D.2-52]
+cfsTimeoutCounter: .fill 1
+
+; OSBYTE 177 (&B1) Read/write input source [MasRef D.2-53]
+inputSource: .fill 1
+
+; OSBYTE 178 (&B2) Keyboard interrupt disable flag
+keyboardInterruptDisableFlag: .fill 1
+
+; OSBYTE 179 (&B3) Read/write primary OSHWM
+defaultOSHWM: .fill 1
+
+; OSBYTE 180 (&B4) Read/write current OSHWM
+currentOSHWM: .fill 1
+
+; OSBYTE 181 (&B5) Read/write RS243 input interpretation [MasRef D.2-54]
+rs423InputInterpretationStatus: .fill 1
+
+; OSBYTE 182 (&B6) Character definition explosion status
+softCharacterDefinitionsSwitch: .fill 1
+
+; OSBYTE 183 (&B7) Read/write cassette/ROM filing system [MasRef D.2-55]
+cfsRFSFSSwitch: .fill 1
+
+; OSBYTE 184 (&B8) Unused
+osbyteB8Value: .fill 1
+
+; OSBYTE 185 (&B9) ROM polling semaphore
+romPollingSemaphore: .fill 1
+
+; OSBYTE 186 (&BA) Read ROM number active at last BRK [MasRef D.2-56]
+romActiveAtLastBRK: .fill 1
+
+; OSBYTE 187 (&BB) Read ROM number of socket [MasRef D.2-57]
+basicROMNumber: .fill 1
+
+; OSBYTE 188 (&BC) Read current ADC channel number [MasRef D.2-57]
+currentADCChannel: .fill 1
+
+; OSBYTE 189 (&BD) Read maximum ADC channel number [MasRef D.2-57]
+maximumADCChannel: .fill 1
+
+; OSBYTE 190 (&BE) Read/write ADC conversion type [MasRef D.2-58]
+adcConversionType: .fill 1
+
+; OSBYTE 191 (&BF) Read/write RS423 busy flag [MasRef D.2-58]
+rs423Busy: .fill 1
+
+; OSBYTE 192 (&C0) Read serial ACIA control register [MasRef D.2-58]
+aciaControlRegister: .fill 1
+
+; OSBYTE 193 (&C1) Read/write flash counter [MasRef D.2-59]
+flashCounter: .fill 1
+
+; OSBYTE 194 (&C2) Read/write duration of first colour [MasRef D.2-59]
+firstFlashColourDuration: .fill 1
+
+; OSBYTE 195 (&C3) Read/write duration of second colour [MasRef D.2-60]
+secondFlashColourDuration: .fill 1
+
+; OSBYTE 196 (&C4) Read/write keyboard auto-repeat delay [MasRef D.2-60]
+keyboardAutoRepeatDelay: .fill 1
+
+; OSBYTE 197 (&C5) Read/write keyboard auto-repeat rate [MasRef D.2-60]
+keyboardAutoRepeatRate: .fill 1
+
+; OSBYTE 198 (&C6) Read/write *EXEC file handle [MasRef D.2-61]
+execFileHandle: .fill 1
+
+; OSBYTE 199 (&C7) Read/write *SPOOL file handle [MasRef D.2-62]
+spoolFileHandle: .fill 1
+
+; OSBYTE 200 (&C8) Read/write BREAK and ESCAPE effect [MasRef D.2-62]
+breakAndESCAPEEffect: .fill 1
+
+; OSBYTE 201 (&C9) Read/write keyboard disable
+keyboardDisableFlag: .fill 1
+
+; OSBYTE 202 (&CA) Read/write keyboard status byte [MasRef D.2-63]
+keyboardStatusFlags: .block
+shiftPressed=%1<<3
+capsLockDisengaged=%1<<4
+shiftLockDisengaged=%1<<5
+ctrlPressed=%1<<6
+shiftEnabled=%1<<7
+                .fill 1
+                .endblock
+
+; OSBYTE 203 (&CB) ULA interrupt mask
+ulaInterruptMask: .fill 1
+
+; OSBYTE 204 (&CC) Firm key pointer
+firmKeyPointer: .fill 1
+
+; OSBYTE 205 (&CD) Firm key length
+firmKeyLength: .fill 1
+
+; OSBYTE 206 (&CE) Read/write Econet OS call interception [MasRef D.2-66]
+econetInterceptionStatus: .fill 1
+
+; OSBYTE 207 (&CF) Read/write Econet input interpretation [MasRef D.2-66]
+econetInputInterpretationStatus: .fill 1
+
+; OSBYTE 208 (&D0) Read write Econet output [MasRef D.2-67]
+econetOutputInterpretationStatus: .fill 1
+
+; OSBYTE 209 (&D1) Read/write speech suppression status
+speechSuppressionStatus:  .fill 1
+
+; OSBYTE 210 (&D2) Read/write sound suppression status [MasRef D.2-67]
+soundSuppressionStatus: .fill 1
+
+; OSBYTE 211 (&D3) Read/write BELL channel [MasRef D.2-67]
+bellChannel: .fill 1
+
+; OSBYTE 212 (&D4) Read/write BELL sound information [MasRef D.2-68]
+bellSound: .fill 1
+
+; OSBYTE 213 (&D5) Read/write BELL frequency [MasRef D.2-69]
+bellFrequency: .fill 1
+
+; OSBYTE 214 (&D6) Read/write BELL duration [MasRef D.2-69]
+bellDuration: .fill 1
+
+; OSBYTE 215 (&D7) Read/write startup message [MasRef D.2-69]
+startupMessageSuppressionStatus: .fill 1
+
+; OSBYTE 216 (&D8) Read/write length of soft key string [MasRef D.2-70]
+softKeyStringLength: .fill 1
+
+; OSBYTE 217 (&D9) Read/write paged mode line count [MasRef D.2-71]
+pagedModeCounter: .fill 1
+
+; OSBYTE 218 (&DA) Read/write bytes in VDU queue [MasRef D.2-71]
+vduQueueNegativeLength: .fill 1
+
+; OSBYTE 219 (&DB) External sound flag
+externalSoundFlag: .fill 1
+
+; OSBYTE 220 (&DC) Read/write ESCAPE character [MasRef D.2-72]
+escapeCharacter: .fill 1
+
+; OSBYTE 221 (&DD) Read/write interpretation of input values 192-207 [MasRef D.2-73]
+input192To207Interpretation: .fill 1
+
+; OSBYTE 222 (&DE) Read/write interpretation of input values 208-223 [MasRef D.2-73]
+input208To223Interpretation: .fill 1
+
+; OSBYTE 223 (&DF) Read/write interpretation of input values 224-239 [MasRef D.2-73]
+input224To239Interpretation: .fill 1
+
+; OSBYTE 224 (&E0) Read/write interpretation of input values 240-255 [MasRef D.2-73]
+input240To255Interpretation: .fill 1
+
+; OSBYTE 225 (&E1) Read/write soft key interpretation [MasRef D.2-74]
+softKeyInterpretation: .fill 1
+
+; OSBYTE 226 (&E2) Read/write SHIFT+soft key interpretation [MasRef D.2-74]
+shiftSoftKeyInterpretation: .fill 1
+
+; OSBYTE 227 (&E3) Read/write CTRL+soft key interpretation [MasRef D.2-74]
+ctrlSoftKeyInterpretation: .fill 1
+
+; OSBYTE 228 (&E4) Read/write SHIFT+CTRL+soft key interpretation [MasRef D.2-74]
+shiftCtrlSoftKeyInterpretation: .fill 1
+
+; OSBYTE 229 (&E5) Read/write ESCAPE key status [MasRef D.2-75]
+escapeKeyStatus: .fill 1
+
+; OSBYTE 230 (&E6) Read/write ESCAPE effects [MasRef D.2-75]
+escapeEffects: .fill 1
+
+; OSBYTE 231 (&E7) Reserved for 6522 expansion IRQ mask
+viaInterruptMask: .fill 1
+
+; OSBYTE 232 (&E8) Sound semaphore, indicating envelope processing status
+soundSemaphore: .fill 1
+
+; OSBYTE 233 (&E9) Soft key expansion pointer
+softKeyExpansionPtr: .fill 1
+
+; OSBYTE 234 (&EA) Read flag indicating Tube presence [MasRef D.2-76]
+tubePresence: .fill 1
+
+; OSBYTE 235 (&EB) Speech processor presence flag
+speechPresenceFlag: .fill 1
+
+; OSBYTE 236 (&EC) Read/write character destination status [MasRef D.2-77]
+characterDestinationStatus: .block
+                .fill 1
+rs423_enable=1
+vdu_disable=2
+printer_disable=4               ;printer always off
+printer_enable=8                ;printer always on
+spool_disable=16
+printer_maybe=64                ;printer on when VDU 1 only
+                .endblock
+
+; OSBYTE 237 (&ED) Read/write cursor editing status [MasRef D.2-77]
+editKeysMode: .block
+editKeys=0                      ;edit keys do editing
+asciiKeys=1                     ;edit keys are ASCII 135-139
+functionKeys=2                  ;edit keys are F keys 11-15
+                .fill 1
+                .endblock
+
+; OSBYTE 238 (&EE) Unused
+osbyteEEValue: .fill 1
+
+                .if version==300
+; OSBYTE 239 (&EF) Read/write *SHADOW state [MasRef D.2-78]
+shadowRAMState: .fill 1
+                .else
+; OSBYTE 239 (&EF) Read/write *SHADOW state [MasRef D.2-78]
+osbyteEFValue: .fill 1
+                .endif
+
+; OSBYTE 240 (&F0) Read country flag [MasRef D.2-79]
+countryFlag: .fill 1
+
+; OSBYTE 241 (&F1) Read/write user flag [MasRef D.2-79]
+userFlag: .fill 1
+
+; OSBYTE 242 (&F2) RAM copy of ULA miscellaneous register
+ulaMiscRegister: .fill 1
+
+; OSBYTE 243 (&F3) Read timer switch state [MasRef D.2-80]
+;
+; The location holds either 5 (initialTimerSwitchState) or 10
+; (initialTimerSwitchState^15) - i.e., the offset of the byte after
+; the last of the timer.
+;
+; Various offsets are applied to the timer addresses to make this
+; work.
+timerSwitchState: .fill 1
+
+; OSBYTE 244 (&F4) Read/write soft key consistency flag [MasRef D.2-81]
+softKeyConsistencyFlag: .fill 1
+
+; OSBYTE 245 (&F5) Read printer driver type [MasRef D.2-81[
+printerDriverType: .fill 1
+
+; OSBYTE 246 (&F6) Read/write printer ignore character [MasRef D.2-81]
+printerIgnoreChar: .fill 1
+
+; OSBYTE 247 (&F7) Read/write BREAK intercept vector [MasRef D.2-82]
+breakVectorByte0: .fill 1
+
+; OSBYTE 248 (&F7) Read/write BREAK intercept vector [MasRef D.2-82]
+breakVectorByte1: .fill 1
+
+; OSBYTE 249 (&F7) Read/write BREAK intercept vector [MasRef D.2-82]
+breakVectorByte2: .fill 1
+
+                .if version==300
+; OSBYTE 250 (&FA) Read memory written by VDU driver [MasRef D.2-82]
+vduDriverMemory: .fill 1
+                .else
+; OSBYTE 250 (&FA) Unused
+osbyteFAValue: .fill 1
+                .endif
+
+                .if version==300
+; OSBYTE 251 (&FB) Read memory displayed [MasRef D.2-83]
+displayMemory: .fill 1
+                .else
+; OSBYTE 251 (&FB) Unused
+osbyteFBValue: .fill 1
+                .endif
+
+; OSBYTE 252 (&FC) Read/write current language ROM number [MasRef D.2-83]
+currentLanguageROM: .fill 1
+                
+; OSBYTE 253 (&FD) Read last BREAK type [MasRef D.2-83]
+lastBREAKType: .block
+                .fill 1
+softBREAK=0
+powerOn=1
+hardBREAK=2
+                .endblock
+; OSBYTE 254 (&FE) Available RAM
+availableRAM: .fill 1
+; OSBYTE 255 (&FF) Read/write startup options [MasRef D.2-84]
+startupOptions: .fill 1
+modeMask=7
+                
                 .endvirtual
 
 ;-------------------------------------------------------------------------
@@ -4750,7 +5058,8 @@ LD841:
 
 ; Default page 2 contents - vectors and OSBYTE variables
 ; ======================================================
-LD845:
+defaultPage02:
+defaultVectors:
                 .word LE07E                  ; USERV=$200
                 .word LDB33                  ; BRKV=$202 
                 .word LDB47                  ; IRQ1V=$204
@@ -4764,100 +5073,107 @@ LD845:
                 .word LF0CC                  ; ARGSV=$214
                 .word LF420                  ; BGETV=$216
                 .word LF480                  ; BPUTV=$218
-                .word rtsFFA2                  ; GBPBV=$21a
+                .word rtsFFA2                ; GBPBV=$21a
                 .word LF320                  ; FINDV=$21c
                 .word LF0E8                  ; FSCV=$21e 
-                .word rtsFFA2                  ; EVENTV=$22
-                .word rtsFFA2                  ; UPTV=$222 
-                .word rtsFFA2                  ; NETV=$224 
-                .word rtsFFA2                  ; VDUV=$226 
+                .word rtsFFA2                ; EVENTV=$22
+                .word rtsFFA2                ; UPTV=$222 
+                .word rtsFFA2                ; NETV=$224 
+                .word rtsFFA2                ; VDUV=$226 
                 .word LEADF                  ; KEYV=$228 
                 .word LE221                  ; INSV=$22a 
                 .word LE1D2                  ; REMV=$22c 
                 .word LDF41                  ; CNPV=$22e 
-                .word rtsFFA2                  ; IND1V=$230
-                .word rtsFFA2                  ; IND2V=$232
-                .word rtsFFA2                  ; IND3V=$234
+                .word rtsFFA2                ; IND1V=$230
+                .word rtsFFA2                ; IND2V=$232
+                .word rtsFFA2                ; IND3V=$234
 
 ; Default OSBYTE variables
-                .word $0190
-                .word extendedVectorSpace
-                .word romInformationTable
-                .word LEDD3
-                .word $0300
-                brk                          ; D885= 00          .
-                brk                          ; D886= 00          .
-                .byte $FF                    ; D887= FF          .
-                brk                          ; D888= 00          .
-                brk                          ; D889= 00          .
-                brk                          ; D88A= 00          .
-                brk                          ; D88B= 00          .
-                brk                          ; D88C= 00          .
-                brk                          ; D88D= 00          .
-                brk                          ; D88E= 00          .
-                brk                          ; D88F= 00          .
-                .byte $FF                    ; D890= FF          .
-                ;tsb $04                      ; D891= 04 04       ..
-                .byte $04
-                .byte $04
-                brk                          ; D893= 00          .
-                .byte $FF                    ; D894= FF          .
-                brk                          ; D895= 00          .
-                ora $1919,y                  ; D896= 19 19 19    ...
-                ;and ($08)                    ; D899= 32 08       2.
-                .byte $32
-                .byte $08
-                brk                          ; D89B= 00          .
-                brk                          ; D89C= 00          .
-                brk                          ; D89D= 00          .
-                brk                          ; D89E= 00          .
-                brk                          ; D89F= 00          .
-                .byte $FF                    ; D8A0= FF          .
-                brk                          ; D8A1= 00          .
-                brk                          ; D8A2= 00          .
-                brk                          ; D8A3= 00          .
-                brk                          ; D8A4= 00          .
-                brk                          ; D8A5= 00          .
-                bvc LD8A8                    ; D8A6= 50 00       P.
-LD8A8:
-                .byte $03                    ; D8A8= 03          .
-                ;bcc LD90F                    ; D8A9= 90 64       .d
-                .byte $90
-                .byte $64
-                asl $81                      ; D8AB= 06 81       ..
-                brk                          ; D8AD= 00          .
-                brk                          ; D8AE= 00          .
-                brk                          ; D8AF= 00          .
-                brk                          ; D8B0= 00          .
-                .byte $1B                    ; D8B1= 1B          .
-                ora ($D0,x)                  ; D8B2= 01 D0       .P
-                cpx #$F0                     ; D8B4= E0 F0       `p
-                ora ($01,x)                  ; D8B6= 01 01       ..
-                ora ($00,x)                  ; D8B8= 01 00       ..
-                brk                          ; D8BA= 00          .
-                brk                          ; D8BB= 00          .
-valueFF:
-                .byte $FF                    ; D8BC= FF          .
-                .byte $FF                    ; D8BD= FF          .
-                .byte $FF                    ; D8BE= FF          .
-                brk                          ; D8BF= 00          .
-                brk                          ; D8C0= 00          .
-                brk                          ; D8C1= 00          .
-                brk                          ; D8C2= 00          .
-                brk                          ; D8C3= 00          .
-                brk                          ; D8C4= 00          .
-                brk                          ; D8C5= 00          .
-                brk                          ; D8C6= 00          .
-                brk                          ; D8C7= 00          .
-                ora $FF                      ; D8C8= 05 FF       ..
-                brk                          ; D8CA= 00          .
-                asl a                        ; D8CB= 0A          .
-                brk                          ; D8CC= 00          .
-                brk                          ; D8CD= 00          .
-                brk                          ; D8CE= 00          .
-                brk                          ; D8CF= 00          .
-                brk                          ; D8D0= 00          .
-                .byte $FF                    ; D8D1= FF          .
+                .word mosVariables-166       ; mosVariablesAddress
+                .word extendedVectorSpace    ; extendedVectorSpaceAddress
+                .word romInformationTable    ; romInformationTableAddress
+                .word LEDD3                  ; keyboardTranslationTableAddress
+                .word vv                     ; vduVariablesAddress
+                .byte $00                    ; cfsTimeoutCounter
+                .byte $00                    ; inputSource
+                .byte $FF                    ; keyboardInterruptDisableFlag
+                .byte $00                    ; defaultOSHWM
+                .byte $00                    ; currentOSHWM
+                .byte $00                    ; rs423InputInterpretationStatus
+                .byte $00                    ; softCharacterDefinitionsSwitch
+                .byte $00                    ; cfsRFSFSSwitch
+                .byte $00                    ; osbyteB8Value
+                .byte $00                    ; romPollingSemaphore
+                .byte $00                    ; romActiveAtLastBRK
+                .byte $FF                    ; basicROMNumber
+                .byte $04                    ; currentADCChannel
+                .byte $04                    ; maximumADCChannel
+                .byte $00                    ; adcConversionType
+                .byte $FF                    ; rs423Busy
+                .byte $00                    ; aciaControlRegister
+                .byte $19                    ; flashCounter
+                .byte $19                    ; firstFlashColourDuration
+                .byte $19                    ; secondFlashColourDuration
+                .byte $32                    ; keyboardAutoRepeatDelay
+                .byte $08                    ; keyboardAutoRepeatRate
+                .byte $00                    ; execFileHandle
+                .byte $00                    ; spoolFileHandle
+                .byte $00                    ; breakAndESCAPEEffect
+                .byte $00                    ; keyboardDisableFlag
+                .byte $00                    ; keyboardStatusFlags
+                .byte $FF                    ; ulaInterruptMask
+                .byte $00                    ; firmKeyPointer
+                .byte $00                    ; firmKeyLength
+                .byte $00                    ; econetInterceptionStatus
+                .byte $00                    ; econetInputInterpretationStatus
+                .byte $00                    ; econetOutputInterpretationStatus
+                .byte $50                    ; speechSuppressionStatus
+                .byte $00                    ; soundSuppressionStatus
+                .byte $03                    ; bellChannel
+                .byte $90                    ; bellSound
+                .byte $64                    ; bellFrequency
+                .byte $06                    ; bellDuration
+                .byte $81                    ; startupMessageSuppressionStatus
+                .byte $00                    ; softKeyStringLength
+                .byte $00                    ; pagedModeCounter
+                .byte $00                    ; vduQueueNegativeLength
+                .byte $00                    ; externalSoundFlag
+                .byte $1B                    ; escapeCharacter
+                .byte $01                    ; input192To207Interpretation
+                .byte $d0                    ; input208To223Interpretation
+                .byte $e0                    ; input224To239Interpretation
+                .byte $f0                    ; input240To255Interpretation
+                .byte $01                    ; softKeyInterpretation
+                .byte $01                    ; shiftSoftKeyInterpretation
+                .byte $01                    ; ctrlSoftKeyInterpretation
+                .byte $00                    ; shiftCtrlSoftKeyInterpretation
+                .byte $00                    ; escapeKeyStatus
+                .byte $00                    ; escapeEffects
+valueFF:        .byte $FF                    ; viaInterruptMask
+                .byte $FF                    ; soundSemaphore
+                .byte $FF                    ; softKeyExpansionPtr
+                .byte $00                    ; tubePresence
+                .byte $00                    ; speechPresenceFlag
+                .byte $00                    ; characterDestinationStatus
+                .byte $00                    ; editKeysMode
+defaultPage02SoftResetEnd:
+                .byte $00                    ; osbyteEEValue
+                .byte $00                    ; osbyteEFValue/shadowRAMState
+                .byte $00                    ; countryFlag
+                .byte $00                    ; userFlag
+                .byte $00                    ; ulaMiscRegister
+                .byte $05                    ; timerSwitchState
+                .byte $ff                    ; softKeyConsistencyFlag
+                .byte $00                    ; printerDriverType
+                .byte $0a                    ; printerIgnoreChar
+defaultPage02HardResetEnd:
+                .byte $00                    ; breakVectorByte0
+                .byte $00                    ; breakVectorByte1
+                .byte $00                    ; breakVectorByte2
+                .byte $00                    ; osbyteFAValue/vduDriverMemory
+                .byte $00                    ; osbyteFBValue/displayMemory
+                .byte $FF                    ; currentLanguageROM
+defaultPage02End:
 
 ; RESET
 ; =====
@@ -4915,12 +5231,12 @@ LD912:
                 pla                          ; D918= 68          h
                 asl a                        ; D919= 0A          .
                 ldx #$9B                     ; D91A= A2 9B       ".
-                ldy #$8D                     ; D91C= A0 8D        .
+                ldy #defaultPage02End-defaultPage02
                 pla                          ; D91E= 68          h
                 beq LD92A                    ; D91F= F0 09       p.
-                ldy #$7E                     ; D921= A0 7E        ~
+                ldy #defaultPage02SoftResetEnd-defaultPage02
                 bcc LD934                    ; D923= 90 0F       ..
-                ldy #$87                     ; D925= A0 87        .
+                ldy #defaultPage02HardResetEnd-defaultPage02
                 inc $028D                    ; D927= EE 8D 02    n..
 LD92A:
                 inc $028D                    ; D92A= EE 8D 02    n..
@@ -4946,7 +5262,7 @@ LD948:
                 bne LD948                    ; D94B= D0 FB       P{
 
 LD94D:
-                lda LD845-1,y                ; Set up vectors
+                lda defaultPage02-1,y                ; Set up vectors
                 sta vectors-1,y
                 dey
                 bne LD94D
@@ -9055,7 +9371,7 @@ LF094:
                 jsr LDDBA
                 ldx #$0E
 LF09B:
-                lda LD845+(FILEV-1-vectors),x
+                lda defaultPage02+(FILEV-1-vectors),x
                 sta FILEV-1,x
                 dex
                 bne LF09B
@@ -11096,7 +11412,7 @@ osbyte9D:
 LFFB6:                                       ; Size of default vector table
                 .byte $36
 LFFB7:                                       ; Address of default vector and system table
-                .word LD845
+                .word defaultVectors
 OSRDRM:                                      ; FFB9
                 jmp LDAF2
                 jmp LD6D8                    ; FFBC
