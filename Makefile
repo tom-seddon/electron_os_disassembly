@@ -1,4 +1,5 @@
 # -*- mode:makefile-gmake; -*-
+MAKEFLAGS+=--no-print-directory
 
 ifeq ($(OS),Windows_NT)
 PYTHON:=py -3
@@ -80,6 +81,6 @@ _diff:
 ##########################################################################
 ##########################################################################
 
-.PHONY:tom_laptop
-tom_laptop:
+.PHONY:_tom
+_tom :
 	$(_V)$(MAKE)

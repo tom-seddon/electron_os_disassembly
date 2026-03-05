@@ -1,3 +1,13 @@
 #+STARTUP: overview
 
+* =.dir-locals.el=
+
+#+begin_src elisp
+  ((nil . ((compile-command . "cd ~/github/electron_os_disassembly && make _tom"))))
+#+end_src
+
+#+begin_src elisp
+  ((nil . ((compile-command . "cd D:\\tom\\github\\electron_os_disassembly && make _tom"))))
+#+end_src
+
 * eof.
