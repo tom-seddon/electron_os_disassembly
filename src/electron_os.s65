@@ -1746,7 +1746,7 @@ vduRoutinesTable: .macro lsb
                 .vduEntry LE64B,0,\lsb ; VDU 7
                 .vduEntry LC53E,0,\lsb ; VDU 8
                 .vduEntry LC5E2,0,\lsb ; VDU 9
-                .vduEntry LC66A,0,\lsb ; VDU 10
+                .vduEntry vdu10EntryPoint,0,\lsb ; VDU 10
                 .vduEntry LC5D9,0,\lsb ; VDU 11
                 .vduEntry LC6F6,0,\lsb ; VDU 12
                 .vduEntry LC75E,0,\lsb ; VDU 13
@@ -2111,10 +2111,10 @@ LC4FF:
 LC504:
                 rts                          ; C504= 60          `
 
-LC505:
-                lda $D0                      ; C505= A5 D0       %P
-                and #$20                     ; C507= 29 20       )
-                rts                          ; C509= 60          `
+testVD5State:
+                lda $D0
+                and #$20
+                rts
 
 LC50A:
                 jsr LD6DE                    ; C50A= 20 DE D6     ^V
@@ -2154,7 +2154,7 @@ LC535:
                 lda #$20                     ; C53A= A9 20       )
                 bne LC523                    ; C53C= D0 E5       Pe
 LC53E:
-                jsr LC505                    ; C53E= 20 05 C5     .E
+                jsr testVD5State                    ; C53E= 20 05 C5     .E
                 bne LC59D                    ; C541= D0 5A       PZ
                 dec $0318                    ; C543= CE 18 03    N..
                 ldx $0318                    ; C546= AE 18 03    ...
@@ -2238,7 +2238,7 @@ LC5D6:
                 jmp LD0C9                    ; C5D6= 4C C9 D0    LIP
 
 LC5D9:
-                jsr LC505                    ; C5D9= 20 05 C5     .E
+                jsr testVD5State                    ; C5D9= 20 05 C5     .E
                 beq LC572                    ; C5DC= F0 94       p.
 LC5DE:
                 ldx #$02                     ; C5DE= A2 02       ".
@@ -2315,8 +2315,8 @@ LC659:
 LC667:
                 jmp LD0C9                    ; C667= 4C C9 D0    LIP
 
-LC66A:
-                jsr LC505                    ; C66A= 20 05 C5     .E
+vdu10EntryPoint:
+                jsr testVD5State                    ; C66A= 20 05 C5     .E
                 beq LC606                    ; C66D= F0 97       p.
 LC66F:
                 ldx #$02                     ; C66F= A2 02       ".
@@ -2408,7 +2408,7 @@ LC6F5:
                 rts                          ; C6F5= 60          `
 
 LC6F6:
-                jsr LC505                    ; C6F6= 20 05 C5     .E
+                jsr testVD5State                    ; C6F6= 20 05 C5     .E
                 bne LC769                    ; C6F9= D0 6E       Pn
                 lda $D0                      ; C6FB= A5 D0       %P
                 and #$08                     ; C6FD= 29 08       ).
@@ -2425,7 +2425,7 @@ LC707:
                 inx                          ; C713= E8          h
                 bcc LC707                    ; C714= 90 F1       .q
 LC716:
-                jsr LC505                    ; C716= 20 05 C5     .E
+                jsr testVD5State                    ; C716= 20 05 C5     .E
                 bne LC74D                    ; C719= D0 32       P2
 LC71B:
                 lda #$00                     ; C71B= A9 00       ).
@@ -2433,7 +2433,7 @@ LC71B:
                 sta $0322                    ; C720= 8D 22 03    .".
                 beq LC72A                    ; C723= F0 05       p.
 LC725:
-                jsr LC505                    ; C725= 20 05 C5     .E
+                jsr testVD5State                    ; C725= 20 05 C5     .E
                 bne LC6F5                    ; C728= D0 CB       PK
 LC72A:
                 jsr LC746                    ; C72A= 20 46 C7     FG
@@ -2464,7 +2464,7 @@ LC75B:
                 jmp LD0C9                    ; C75B= 4C C9 D0    LIP
 
 LC75E:
-                jsr LC505                    ; C75E= 20 05 C5     .E
+                jsr testVD5State                    ; C75E= 20 05 C5     .E
                 bne LC754                    ; C761= D0 F1       Pq
                 jsr LCDAA                    ; C763= 20 AA CD     *M
                 jmp LCE42                    ; C766= 4C 42 CE    LBN
@@ -2966,7 +2966,7 @@ LCAA1:
 
 LCAAB:
                 jsr LC53E                    ; CAAB= 20 3E C5     >E
-                jsr LC505                    ; CAAE= 20 05 C5     .E
+                jsr testVD5State                    ; CAAE= 20 05 C5     .E
                 bne LCABC                    ; CAB1= D0 09       P.
                 sta $DC                      ; CAB3= 85 DC       .\
                 lda #$C0                     ; CAB5= A9 C0       )@
@@ -5135,7 +5135,7 @@ defaultPage02:
 defaultVectors:
                 .word LE07E                  ; USERV=$200
                 .word LDB33                  ; BRKV=$202 
-                .word LDB47                  ; IRQ1V=$204
+                .word irq1EntryPoint         ; IRQ1V=$204
                 .word LDB89                  ; IRQ2V=$206
                 .word LDD14                  ; CLIV=$208 
                 .word LE544                  ; BYTEV=$20a
@@ -5153,7 +5153,7 @@ defaultVectors:
                 .word rtsFFA2                ; UPTV=$222 
                 .word rtsFFA2                ; NETV=$224 
                 .word rtsFFA2                ; VDUV=$226 
-                .word LEADF                  ; KEYV=$228 
+                .word keyEntryPoint                  ; KEYV=$228 
                 .word LE221                  ; INSV=$22a 
                 .word LE1D2                  ; REMV=$22c 
                 .word LDF41                  ; CNPV=$22e 
@@ -5386,7 +5386,7 @@ LD993:
                 bpl LD993
 
 ; Check if this is a duplicate of a higher ROM
-                ldx $F4                      ; D99F= A6 F4       &t
+                ldx $F4                      ; get current ROM bank
                 .if version==300
                 .if subVersion==524
                 nop
@@ -5398,38 +5398,42 @@ LD993:
                 beq LD9E0
                 .endif
                 .else
-                txa                          ; D9A1= 8A          .
-                tay                          ; D9A2= A8          (
-LD9A3:
-                iny                          ; D9A3= C8          H
-                cpy #$10                     ; D9A4= C0 10       @.
-                bcs LD9D3                    ; D9A6= B0 2B       0+
-                tya                          ; D9A8= 98          .
-                eor #$FF                     ; D9A9= 49 FF       I.
-                sta $FA                      ; D9AB= 85 FA       .z
-                lda #$7F                     ; D9AD= A9 7F       ).
-                sta $FB                      ; D9AF= 85 FB       .{
-LD9B1:
-                jsr prepareForROMPaging                    ; D9B1= 20 A9 E3     )c
-                sty LFE05                    ; D9B4= 8C 05 FE    ..~
-                lda ($FA),y                  ; D9B7= B1 FA       1z
-                jsr prepareForROMPaging                    ; D9B9= 20 A9 E3     )c
-                stx LFE05                    ; D9BC= 8E 05 FE    ..~
-                cmp ($FA),y                  ; D9BF= D1 FA       Qz
-                bne LD9A3                    ; D9C1= D0 E0       P`
-                inc $FA                      ; D9C3= E6 FA       fz
-                bne LD9B1                    ; D9C5= D0 EA       Pj
-                inc $FB                      ; D9C7= E6 FB       f{
-                lda $FB                      ; D9C9= A5 FB       %{
-                cmp #$84                     ; D9CB= C9 84       I.
-                bcc LD9B1                    ; D9CD= 90 E2       .b
+                txa                          ; A=current ROM
+                tay                          ; Y=current ROM
+compareROMsLoop:
+                iny                          ; next ROM up
+                cpy #$10
+                bcs romIsNotDuplicate   ; taken if no more higher ROMs
+                tya                          ; A=current ROM
+
+                ; form $7fff-ROM in ($fa), so that the Y register can
+                ; be reused. (This does mean that $7fff is read, but
+                ; that's fine, as it'll always be a match.)
+                eor #$FF
+                sta $FA
+                lda #$7F
+                sta $FB
+compareROMContentsLoop:
+                jsr prepareForROMPaging
+                sty LFE05                    ; page in higher ROM
+                lda ($FA),y                  ; load higher ROM byte
+                jsr prepareForROMPaging      
+                stx LFE05                    ; page in lower ROM
+                cmp ($FA),y                  ; do bytes match?
+                bne compareROMsLoop ; taken if ROMs don't match - check next ROM
+                inc $FA                      ; next address LSB
+                bne compareROMContentsLoop
+                inc $FB                      ; next address MSB
+                lda $FB
+                cmp #$84                     ; compare up to $8400 or so
+                bcc compareROMContentsLoop ; taken if below $8400 or so
 LD9CF:
-                ldx $F4                      ; D9CF= A6 F4       &t
-                bpl LD9E0                    ; D9D1= 10 0D       ..
+                ldx $F4
+                bpl LD9E0
                 .endif
 
 ; This ROM is not a duplicate
-LD9D3:
+romIsNotDuplicate:
                 lda $8006                    ; Store ROM type in ROM table
                 sta romInformationTable,x
                 and #$8F                     ; Check if b7=0 and b3-b0=0
@@ -5675,32 +5679,35 @@ LDB3C:
                 jsr OSNEWL                   ; DB41= 20 E7 FF     g.
                 jmp LDA83                    ; DB44= 4C 83 DA    L.Z
 
-LDB47:
-                cld                          ; DB47= D8          X
-                lda $FC                      ; DB48= A5 FC       %|
-                pha                          ; DB4A= 48          H
-                txa                          ; DB4B= 8A          .
-                pha                          ; DB4C= 48          H
-                tya                          ; DB4D= 98          .
-                pha                          ; DB4E= 48          H
-                lda #>LDB82-1                ; DB4F= A9 DB       )[
-                pha                          ; DB51= 48          H
-                lda #<LDB82-1                ; DB52= A9 81       ).
-                pha                          ; DB54= 48          H
-                ldy LFE00                    ; DB55= AC 00 FE    ,.~
-                tya                          ; DB58= 98          .
-                lsr a                        ; C set if any IRQ
-                bcc LDB6F                    ; DB5A= 90 13       ..
-                tya                          ; DB5C= 98          .
-                and $025B                    ; DB5D= 2D 5B 02    -[.
-                and #$FE                     ; DB60= 29 FE       )~
-                tax                          ; DB62= AA          *
-                and #$0C                     ; DB63= 29 0C       ).
-                bit $25                      ; DB65= 24 25       $%
-                txa                          ; DB67= 8A          .
-                and #$70                     ; DB68= 29 70       )p
-                beq LDB8C                    ; DB6A= F0 20       p
-                jmp LF4DF                    ; DB6C= 4C DF F4    L_t
+irq1EntryPoint:
+                cld
+                lda $FC                      ; restore original A
+                pha                          ; save original A
+                txa
+                pha                          ; save original X
+                tya
+                pha                          ; save original Y
+                lda #>LDB82-1
+                pha                          ; save return thunk MSB
+                lda #<LDB82-1
+                pha                          ; save return thunk LSB
+                ldy LFE00                    ; Y=ULA IRQ flags
+                tya                          ; A=ULA IRQ flags
+                lsr a                        ; C set if any ULA IRQ
+                bcc LDB6F                    ; taken if no ULA IRQ
+                tya                          ; A=ULA IRQ flags Form
+; Form effective IRQ flags: mask off uninteresting IRQs (as set by
+; OSBYTE 203), and mask off bit 0.
+                and $025B                    ; mask off uninteresting IRQs
+                and #%11111110               ; ignore bit 0
+                tax                          ; X=effective IRQ flags
+; This bit appears to be irrelevant. See https://www.stardot.org.uk/forums/viewtopic.php?p=471253#p471253
+                and #$0C
+                bit $25
+                txa                          ; A=effective IRQ flags
+                and #%01110000               ; isolate tone+tx+rx
+                beq handleRTCOrDisplayEndIRQ ; taken if rtc/display end
+                jmp LF4DF                    ; handle tone/tx/rq
 
 LDB6F:
                 ldx #$05                     ; Issue service call 5 - IRQ occured
@@ -5727,95 +5734,100 @@ LDB89:
                 lda $FC                      ; Restore A from IRQ store
                 rti                          ; Return from IRQ
 
-LDB8C:
-                txa                          ; DB8C= 8A          .
-                ldy #$20                     ; DB8D= A0 20
-                and #$08                     ; DB8F= 29 08       ).
-                bne LDBC5                    ; DB91= D0 32       P2
-                txa                          ; DB93= 8A          .
-                and #$04                     ; DB94= 29 04       ).
-                beq LDB6F                    ; DB96= F0 D7       pW
-                jsr LC98E                    ; DB98= 20 8E C9     .I
-                lda $0251                    ; DB9B= AD 51 02    -Q.
-                beq LDBBB                    ; DB9E= F0 1B       p.
-                dec $0251                    ; DBA0= CE 51 02    NQ.
-                bne LDBBB                    ; DBA3= D0 16       P.
-                ldx $0252                    ; DBA5= AE 52 02    .R.
-                lda $0248                    ; DBA8= AD 48 02    -H.
-                beq LDBB0                    ; DBAB= F0 03       p.
-                ldx $0253                    ; DBAD= AE 53 02    .S.
+;-------------------------------------------------------------------------
+;
+; Entry: X=original effective IRQ flags
+
+handleRTCOrDisplayEndIRQ:
+                txa                          ; A=effective IRQ flags
+                ldy #$20                     ; Y=clear RTC IRQ value
+                and #$08                     ; isolate RTC bit
+                bne LDBC5                    ; taken if RTC IRQ
+                txa                          ; A=effective IRQ flags
+                and #$04                     ; isolate Display End bit
+                beq LDB6F                    ; taken if not display end IRQ
+; handle display end IRQ
+                jsr LC98E
+                lda $0251
+                beq LDBBB
+                dec $0251
+                bne LDBBB
+                ldx $0252
+                lda $0248
+                beq LDBB0
+                ldx $0253
 LDBB0:
-                eor #$07                     ; DBB0= 49 07       I.
-                sta $0248                    ; DBB2= 8D 48 02    .H.
-                stx $0251                    ; DBB5= 8E 51 02    .Q.
-                jsr LC8A3                    ; DBB8= 20 A3 C8     #H
+                eor #$07
+                sta $0248
+                stx $0251
+                jsr LC8A3
 LDBBB:
-                ldy #$04                     ; DBBB= A0 04        .
-                jsr LE202                    ; DBBD= 20 02 E2     .b
-                dec $0240                    ; DBC0= CE 40 02    N@.
-                ldy #$10                     ; DBC3= A0 10        .
+                ldy #$04
+                jsr LE202
+                dec $0240
+                ldy #$10                     ; Y=clear Display End IRQ value
 LDBC5:
-                sty LFE05                    ; DBC5= 8C 05 FE    ..~
-                lda $0283                    ; DBC8= AD 83 02    -..
-                tax                          ; DBCB= AA          *
-                eor #$0F                     ; DBCC= 49 0F       I.
-                pha                          ; DBCE= 48          H
-                tay                          ; DBCF= A8          (
-                sec                          ; DBD0= 38          8
+                sty LFE05
+                lda $0283
+                tax
+                eor #$0F
+                pha
+                tay
+                sec
 LDBD1:
-                lda $0290,x                  ; DBD1= BD 90 02    =..
-                adc #$00                     ; DBD4= 69 00       i.
-                sta $0290,y                  ; DBD6= 99 90 02    ...
-                dex                          ; DBD9= CA          J
-                beq LDBDF                    ; DBDA= F0 03       p.
-                dey                          ; DBDC= 88          .
-                bne LDBD1                    ; DBDD= D0 F2       Pr
+                lda $0290,x
+                adc #$00
+                sta $0290,y
+                dex
+                beq LDBDF
+                dey
+                bne LDBD1
 LDBDF:
-                pla                          ; DBDF= 68          h
-                sta $0283                    ; DBE0= 8D 83 02    ...
-                ldx #$05                     ; DBE3= A2 05       ".
+                pla
+                sta $0283
+                ldx #$05
 LDBE5:
-                inc $029A,x                  ; DBE5= FE 9A 02    ~..
-                bne LDBF2                    ; DBE8= D0 08       P.
-                dex                          ; DBEA= CA          J
-                bne LDBE5                    ; DBEB= D0 F8       Px
-                ldy #$05                     ; DBED= A0 05        .
-                jsr LE202                    ; DBEF= 20 02 E2     .b
+                inc $029A,x
+                bne LDBF2
+                dex
+                bne LDBE5
+                ldy #$05
+                jsr LE202
 LDBF2:
-                lda $02B0                    ; DBF2= AD B0 02    -0.
-                bne LDBFF                    ; DBF5= D0 08       P.
-                lda $02B1                    ; DBF7= AD B1 02    -1.
-                beq LDC02                    ; DBFA= F0 06       p.
-                dec $02B1                    ; DBFC= CE B1 02    N1.
+                lda $02B0
+                bne LDBFF
+                lda $02B1
+                beq LDC02
+                dec $02B1
 LDBFF:
-                dec $02B0                    ; DBFF= CE B0 02    N0.
+                dec $02B0
 LDC02:
-                bit $0278                    ; DC02= 2C 78 02    ,x.
-                bpl LDC12                    ; DC05= 10 0B       ..
-                inc $0278                    ; DC07= EE 78 02    nx.
-                cli                          ; DC0A= 58          X
-                jsr LE893                    ; DC0B= 20 93 E8     .h
-                sei                          ; DC0E= 78          x
-                dec $0278                    ; DC0F= CE 78 02    Nx.
+                bit $0278
+                bpl LDC12
+                inc $0278
+                cli
+                jsr LE893
+                sei
+                dec $0278
 LDC12:
-                lda $0242                    ; DC12= AD 42 02    -B.
-                beq LDC22                    ; DC15= F0 0B       p.
-                lda $EC                      ; DC17= A5 EC       %l
-                ora $ED                      ; DC19= 05 ED       .m
-                clc                          ; DC1B= 18          .
-                beq LDC1F                    ; DC1C= F0 01       p.
-                sec                          ; DC1E= 38          8
+                lda $0242
+                beq LDC22
+                lda $EC
+                ora $ED
+                clc
+                beq LDC1F
+                sec
 LDC1F:
-                jsr LEC49                    ; DC1F= 20 49 EC     Il
+                jsr LEC49
 LDC22:
-                ldy $0249                    ; DC22= AC 49 02    ,I.
-                beq LDC2C                    ; DC25= F0 05       p.
-                ldx #$15                     ; DC27= A2 15       ".
-                jsr osbyte8F                    ; DC29= 20 A8 F0     (p
+                ldy $0249
+                beq LDC2C
+                ldx #$15
+                jsr osbyte8F
 LDC2C:
-                bit $02C6                    ; DC2C= 2C C6 02    ,F.
-                bmi LDC45                    ; DC2F= 30 14       0.
-                jmp LDEF9                    ; DC31= 4C F9 DE    Ly^
+                bit $02C6
+                bmi LDC45
+                jmp LDEF9
 
 LDC34:
                 lda #$C3                     ; DC34= A9 C3       )C
@@ -8216,19 +8228,19 @@ LEADD:
 
 ; KEYV handler
 ; ************
-LEADF:
-                bvc LEAE9                    ; V=0, jump to keyscan routines (eg INKEY-num)
+keyEntryPoint:
+                bvc keyVClear ; V=0, jump to keyscan routines (eg INKEY-num)
                 inc $0242                    ; Increment keyboard semaphore
-                bcs LEAEE                    ; V=1, C=1, jump with timer interupt
+                bcs keyTestSHIFTAndCTRLOrTimerInterrupt ; V=1, C=1, jump with timer interupt
                 jmp LEC06                    ; V=1, C=0, jump with keypress interupt
 
 ; VC, keyscan call
 ; ----------------
-LEAE9:
-                bcc LEAEE                    ; V=0, C=0, jump to test SHIFT and CTRL
+keyVClear:
+                bcc keyTestSHIFTAndCTRLOrTimerInterrupt ; V=0, C=0, jump to test SHIFT and CTRL
                 jmp LEC53                    ; V=0, C=1, jump to scan whole keyboard
 
-LEAEE:
+keyTestSHIFTAndCTRLOrTimerInterrupt:
                 lda $025A                    ; Get current keyboard status
 ;                   :\   Bit 7  =1 Control pressed
 ;                   :\   Bit 6  =1 Shift pressed
@@ -8475,16 +8487,16 @@ LEC66_300:
                 
                 beq LEC48                    ; X=0, nonexistant key, exit
                 pha                          ; Save A
-                txa                          ; Save keynum b0-b5
-                and #$3F
-                pha
+                txa                          ; X=key number
+                and #$3F                     ; extract key number bits 0-4
+                pha                          ; save key number bits 0-4
                 jsr LECF8                    ; Get address and map of key
                 sta $FC                      ; Store bitmask in &FC
                 ldx $F4                      ; X=current ROM
                 lda #$08                     ; Page in keyboard in ROM 8
                 jsr selectROMA
                 php                          ; Read internal keypress from ROM
-                jsr LED38
+                jsr readKeypressFromROM
                 plp
                 and $FC                      ; Mask with row bitmask to get b0-b3 set
                 beq LEC3C                    ; Nothing set, skip forward
@@ -8502,9 +8514,9 @@ LEC48:
                 .endif
 
 LEC49:
-                bit valueFF                    ; EC49= 2C BC D8    ,<X
+                bit valueFF
 callKEYV:
-                jmp (KEYV)                  ; EC4C= 6C 28 02    l(.
+                jmp (KEYV)
 
 ; OSBYTE &7A - Keyboard scan from &10
 ; -----------------------------------
@@ -8592,7 +8604,7 @@ LECBB:
                 .if version==300
                 jsr LED5A_300
                 .else
-                jsr LED38                    ; Read this column
+                jsr readKeypressFromROM                    ; Read this column
                 .endif
                 and #$0F                     ; If nothing pressed, skip to check next column
                 beq LECF2
@@ -8732,7 +8744,7 @@ LED5A_300:
 ; Instead of doing LDA (&FA),0 the code does it manually
 ; Y is corrupted, so there's nothing to stop it doing:
 ; LDY #0, LDA (&FA),Y, RTS
-LED38:
+readKeypressFromROM:
                 ldy $FA                      ; Get low byte of key column address
                 iny                          ; If &FF, jump to use other addresses
                 beq LED42
@@ -8804,7 +8816,7 @@ LED9E:
                 .if version==300
                 jsr LED5A_300
                 .else
-                jsr LED38                    ; Read keypress location
+                jsr readKeypressFromROM      ; Read keypress location
                 .endif
                 and #$0F                     ; EDA1= 29 0F       ).
                 beq LEDAA                    ; EDA3= F0 05       p.
