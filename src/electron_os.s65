@@ -14,6 +14,10 @@ fscStarCommand=8
 
 ;-------------------------------------------------------------------------
 
+tubeReasonExecute=4
+                
+;-------------------------------------------------------------------------
+
 bufferKeyboardAddress=$03e0
 bufferKeyboardSize=32
 
@@ -596,6 +600,21 @@ reserved: .fill 1
 
                 .virtual $300
 vv: .dstruct VDUVariables
+                .endvirtual
+
+BlockHeader: .struct
+name: .fill 12                               ; file name, 0-terminated
+load: .fill 4                                ; load address
+exec: .fill 4                                ; exec address
+number: .fill 2                              ; block number
+length: .fill 2                              ; length
+flags: .fill 1                               ; block flags
+spare: .fill 4                               ; spare bytes
+checksum: .fill 2                            ; checksum
+                .endstruct
+
+                .virtual $3b2
+block: .dstruct BlockHeader
                 .endvirtual
 
 ;-------------------------------------------------------------------------
@@ -6276,7 +6295,7 @@ LDF95:
                 rol $02E3,x                  ; DF99= 3E E3 02    >c.
                 rol $02E4,x                  ; DF9C= 3E E4 02    >d.
                 rol $02E5,x                  ; DF9F= 3E E5 02    >e.
-                bcs LDFD5                    ; DFA2= B0 31       01
+                bcs badAddressError
                 dey                          ; DFA4= 88          .
                 bne LDF95                    ; DFA5= D0 EE       Pn
                 ldy $E6                      ; DFA7= A4 E6       $f
@@ -6305,7 +6324,7 @@ LDFC5:
                 jsr LE01B                    ; DFCE= 20 1B E0     .`
                 bcs LE00E                    ; DFD1= B0 3B       0;
                 beq LE013                    ; DFD3= F0 3E       p>
-LDFD5:
+badAddressError:
                 brk                          ; DFD5= 00          .
                 .text $fc,"Bad address",0
 osbyte77:
@@ -9621,13 +9640,13 @@ LF0D9:
 ; FSCV DISPATCH TABLE
 ; -------------------
 LF0DA:
-                .word LF4A4-1
-                .word LF578-1
-                .word LF25B-1
-                .word LE07E-1
-                .word LF25B-1
-                .word LF281-1
-                .word osbyte77-1
+                .word LF4A4-1                ; A=0 *OPT
+                .word LF578-1                ; A=1 EOF#
+                .word LF25B-1                ; A=2 */
+                .word LE07E-1                ; A=3 unknown command
+                .word LF25B-1                ; A=4 *RUN
+                .word LF281-1                ; A=5 *CAT
+                .word osbyte77-1             ; A=6 shut down FS
 
 ; CFS/RFS FSC
 ; ===========
@@ -9649,28 +9668,28 @@ LF0E8:
 ; A=&FF - called from LOAD
 ; A=&00 - called from RUN
 LF0FB:
-                php                          ; F0FB= 08          .
-                pha                          ; F0FC= 48          H
-                jsr LFA82                    ; F0FD= 20 82 FA     .z
-                lda $03C2                    ; F100= AD C2 03    -B.
-                pha                          ; F103= 48          H
-                jsr LF58B                    ; F104= 20 8B F5     .u
-                pla                          ; F107= 68          h
-                beq LF124                    ; F108= F0 1A       p.
-                ldx #$03                     ; F10A= A2 03       ".
-                lda #$FF                     ; F10C= A9 FF       ).
+                php
+                pha
+                jsr LFA82
+                lda block.exec+0
+                pha
+                jsr LF58B
+                pla
+                beq LF124
+                ldx #$03
+                lda #$FF ; load address mask
 LF10E:
-                pha                          ; F10E= 48          H
-                lda $03BE,x                  ; F10F= BD BE 03    =>.
-                sta $B0,x                    ; F112= 95 B0       .0
-                pla                          ; F114= 68          h
-                and $B0,x                    ; F115= 35 B0       50
-                dex                          ; F117= CA          J
-                bpl LF10E                    ; F118= 10 F4       .t
-                cmp #$FF                     ; F11A= C9 FF       I.
-                bne LF124                    ; F11C= D0 06       P.
-                jsr LFA59                    ; F11E= 20 59 FA     Yz
-                jmp LDFD5                    ; F121= 4C D5 DF    LU_
+                pha                          ; save load address mask
+                lda block.load,x
+                sta $B0,x
+                pla          ; restore load address mask
+                and $B0,x    ; mask is $ff if all bytes so far are $ff
+                dex
+                bpl LF10E
+                cmp #$FF                 ; was load address $ffffffff?
+                bne LF124                ; taken if not
+                jsr LFA59
+                jmp badAddressError          ; issue "Bad address" error
 
 LF124:
                 lda $03CA                    ; F124= AD CA 03    -J.
@@ -9681,12 +9700,9 @@ LF124:
 LF12D:
                 jsr LFA63                    ; F12D= 20 63 FA     cz
                 brk                          ; F130= 00          .
-                cmp $4C,x                    ; F131= D5 4C       UL
-                .byte $6F                    ; F133= 6F          o
-                .byte $63                    ; F134= 63          c
-                .byte $6B                    ; F135= 6B          k
-                adc $64                      ; F136= 65 64       ed
-                brk                          ; F138= 00          .
+                .byte $d5
+                .text "Locked",0
+                
 LF139:
                 bcc LF140                    ; F139= 90 05       ..
                 lda #$03                     ; F13B= A9 03       ).
@@ -9719,21 +9735,22 @@ LF154:
 LF169:
                 ldy #$02
 LF16B:
-                lda $03BC,y                  ; Copy load/exec addresses
+                lda block.load-2,y          ; Copy load/exec addresses
                 sta ($C8),y
                 iny
                 cpy #$0A
                 bne LF16B
-                lda $03C8                    ; Length b0-b7=block length
+                
+                lda block.length+0         ; 7Length b0-b7=block length
                 sta ($C8),y
                 iny
-                lda $03C9
+                lda block.length+1
                 clc
-                adc $03C6                    ; Length b8-b23=block number
+                adc block.number+0        ; Length b8-b23=block number
                 sta ($C8),y
                 iny
                 lda #$00
-                adc $03C7                    ; Length b16-b23=overflow
+                adc block.number+1           ; Length b16-b23=overflow
                 sta ($C8),y
                 iny                          ; Length b24-b31=0
                 lda #$00
@@ -9861,27 +9878,39 @@ LF246:
                 inc $03C7                    ; F256= EE C7 03    nG.
                 bne LF21E                    ; F259= D0 C3       PC
 
+;-------------------------------------------------------------------------
+
 ; *RUN <filename>
 ; ===============
-LF25B:
-                jsr LF1B1                    ; F25B= 20 B1 F1     1q
-                ldx #$FF                     ; F25E= A2 FF       ".
-                stx $03C2                    ; F260= 8E C2 03    .B.
-                jsr LF0FB                    ; F263= 20 FB F0     {p
-                bit $027A                    ; F266= 2C 7A 02    ,z.
-                bpl LF275                    ; F269= 10 0A       ..
-                lda $03C4                    ; F26B= AD C4 03    -D.
-                and $03C5                    ; F26E= 2D C5 03    -E.
-                cmp #$FF                     ; F271= C9 FF       I.
-                bne LF278                    ; F273= D0 03       P.
-LF275:
-                jmp ($03C2)                  ; F275= 6C C2 03    lB.
+LF25B: .block
+                jsr LF1B1
+                ldx #$FF
+                stx block.exec+0             ; use file's load address
+                jsr LF0FB
 
-LF278:
-                ldx #$C2                     ; F278= A2 C2       "B
-                ldy #$03                     ; F27A= A0 03        .
-                lda #$04                     ; F27C= A9 04       ).
-                jmp LFB68                    ; F27E= 4C 68 FB    Lh{
+                ; if no Tube, always execute in the host.
+                bit tubePresence             ; Tube present?
+                bpl isHost                   ; taken if no Tube
+
+                ; Tube is present, so check execution address. If
+                ; $FFFFxxxx, execute in the host; otherwise, execute
+                ; over the Tube.
+                lda block.exec+2             ; exec bits 16-23
+                and block.exec+3             ; exec bits 24-31
+                cmp #$FF                     ; exec address is $FFFFxxxx?
+                bne isTube                   ; taken if not $FFFFxxxx
+isHost:
+                jmp (block.exec)
+
+isTube:
+                ldx #<block.exec
+                ldy #>block.exec
+                lda #tubeReasonExecute
+                jmp initiateCFSRFSTubeOperation
+
+                .endblock
+
+;-------------------------------------------------------------------------
 
 ; *CAT
 ; ====
@@ -11367,7 +11396,7 @@ LFB5E:
                 txa                          ; FB63= 8A          .
                 ldx #$B0                     ; FB64= A2 B0       "0
                 ldy #$00                     ; FB66= A0 00        .
-LFB68:
+initiateCFSRFSTubeOperation:
                 pha                          ; FB68= 48          H
                 lda #$C0                     ; FB69= A9 C0       )@
 LFB6B:
